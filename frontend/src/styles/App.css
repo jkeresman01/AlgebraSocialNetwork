@@ -1,0 +1,28 @@
+/*#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: center;
+  height: 100%;
+}*/
+
+body {
+  --alg-gradient-color-1: #E1700E;
+  --alg-gradient-color-2: #C30E60;
+  --topbar-bg: #151515;
+  --feed-div: #e4e4e7;
+}
+
+.topbar {
+  /*background-color: light-dark(var(--topbar-bg), #efedea);*/
+  background: linear-gradient(45deg, var(--alg-gradient-color-1), var(--alg-gradient-color-2));
+}
+
+.feed-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.feed-scroll {
+  overflow-y: scroll;
+  -ms-overflow-style: none; /* ie */
+  scrollbar-width: none; /* ffox*/
+}
