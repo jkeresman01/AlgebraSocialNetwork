@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Data
-@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "friend_request", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"sender_id", "receiver_id"})

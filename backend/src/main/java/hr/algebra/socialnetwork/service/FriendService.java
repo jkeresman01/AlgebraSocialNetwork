@@ -68,11 +68,8 @@ public class FriendService {
         request.setStatus(RequestStatus.ACCEPTED);
 
         User sender = request.getSender();
-
-        receiver.getFriends().add(sender);
         sender.getFriends().add(receiver);
 
-        userRepository.save(receiver);
         userRepository.save(sender);
         friendRequestRepository.save(request);
     }

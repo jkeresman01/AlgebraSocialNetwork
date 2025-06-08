@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Data
-@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "rating", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "post_id"})
