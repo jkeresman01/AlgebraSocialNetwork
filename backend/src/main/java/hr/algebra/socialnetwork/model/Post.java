@@ -14,7 +14,6 @@ import java.util.List;
 @Builder
 @Entity
 @Data
-@EqualsAndHashCode
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "post")
 public final class Post {

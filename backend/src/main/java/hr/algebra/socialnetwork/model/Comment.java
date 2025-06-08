@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Data
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "comment")
 public final class Comment {
