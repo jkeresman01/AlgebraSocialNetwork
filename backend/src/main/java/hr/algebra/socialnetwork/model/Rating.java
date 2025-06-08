@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Data
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "rating", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "post_id"})

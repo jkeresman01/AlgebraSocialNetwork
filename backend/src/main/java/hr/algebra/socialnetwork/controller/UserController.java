@@ -31,7 +31,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
-
     @DeleteMapping("{userId}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok(userService.getUserById(userId));
@@ -44,25 +43,9 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    /*
-    //TODO
-    @PostMapping(
-            value = "/{userId}/profile-image",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<Void> uploadProfileImage(
-            @PathVariable Long userId,
-            @RequestParam("file") MultipartFile file
-    ) {
-        userService.uploadProfileImage(userId, file);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/{userId}/profile-image")
     public ResponseEntity<byte[]> getProfileImage(@PathVariable Long userId) {
-        byte[] image = userService.getProfileImage(userId);
-        return ResponseEntity.ok().body(image);
+        //TODO Implement getProfile image
+        return ResponseEntity.ok().body(new byte[]{});
     }
-    */
-
 }

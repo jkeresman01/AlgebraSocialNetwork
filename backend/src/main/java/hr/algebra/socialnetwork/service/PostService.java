@@ -34,39 +34,24 @@ public class PostService {
     private final CommentDTOMapper commentDTOMapper;
 
     public Page<PostDTO> getAllPosts(Pageable pageable) {
-        return postRepository.findAll(pageable).map(postDTOMapper);
+        return postRepository.findAll(pageable)
+                .map(postDTOMapper);
     }
 
     public PostDTO getPostById(Long id) {
-        return postRepository.findById(id)
-                .map(postDTOMapper)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Post with id [%d] not found".formatted(id)));
+        Post post = findPostById(id);
+        return postDTOMapper.apply(post);
     }
 
     public PostDTO createPost(String email, CreatePostRequest request) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User with email [%s] not found".formatted(email)));
+        User user = findUserByEmail(email);
+        Post post = buildPost(request, user);
 
-        Post post = Post.builder()
-                .title(request.title())
-                .content(request.content())
-                .imageId(request.imageId())
-                .user(user)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        Post saved = postRepository.save(post);
-
-        return postDTOMapper.apply(saved);
+        return postDTOMapper.apply(postRepository.save(post));
     }
 
     public List<PostDTO> getPostsByUserId(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User with id [%d] not found".formatted(userId));
-        }
+        ensureUserExists(userId);
 
         return postRepository.findAllByUserId(userId)
                 .stream()
@@ -75,52 +60,101 @@ public class PostService {
     }
 
     public void ratePost(Long postId, String email, int stars) {
-        if (stars < 1 || stars > 5) {
-            throw new IllegalArgumentException("Rating must be between 1 and 5");
-        }
+        validateStars(stars);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post with id [%d] not found".formatted(postId)));
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User with email [%s] not found".formatted(email)));
-
-        Rating rating = new Rating();
-        rating.setStars(stars);
-        rating.setPost(post);
-        rating.setUser(user);
+        Post post = findPostById(postId);
+        User user = findUserByEmail(email);
+        Rating rating = buildRating(post, user, stars);
 
         ratingRepository.save(rating);
     }
 
     public void commentOnPost(Long postId, String email, String content) {
-        if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("Comment content must not be blank");
-        }
+        validateCommentContent(content);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post with id [%d] not found".formatted(postId)));
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User with email [%s] not found".formatted(email)));
-
-        Comment comment = new Comment();
-        comment.setPost(post);
-        comment.setUser(user);
-        comment.setContent(content);
+        Post post = findPostById(postId);
+        User user = findUserByEmail(email);
+        Comment comment = buildComment(post, user, content);
 
         commentRepository.save(comment);
     }
 
     public List<CommentDTO> getCommentsFromPostWith(Long postId) {
-        if (!postRepository.existsById(postId)) {
-            throw new ResourceNotFoundException("Post with id [%d] not found".formatted(postId));
-        }
+        ensurePostExists(postId);
 
         return commentRepository.findByPostId(postId)
                 .stream()
                 .map(commentDTOMapper)
                 .toList();
+    }
+
+    private Post findPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Post with id [%d] not found.".formatted(postId)
+                ));
+    }
+
+    private void ensurePostExists(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post with id [%d] not found.".formatted(postId));
+        }
+    }
+
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User with email [%s] not found.".formatted(email)
+                ));
+    }
+
+    private void ensureUserExists(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User with id [%d] not found.".formatted(userId));
+        }
+    }
+
+    private void validateStars(int stars) {
+        if (stars < 1 || stars > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5.");
+        }
+    }
+
+    private void validateCommentContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Comment content must not be blank.");
+        }
+    }
+
+    private Post buildPost(CreatePostRequest request, User user) {
+        return Post.builder()
+                .title(request.title())
+                .content(request.content())
+                .imageId(request.imageId())
+                .user(user)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private Rating buildRating(Post post, User user, int stars) {
+        return Rating.builder()
+                .post(post)
+                .user(user)
+                .stars(stars)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private Comment buildComment(Post post, User user, String content) {
+        return Comment.builder()
+                .post(post)
+                .user(user)
+                .content(content)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
     }
 
 //    public String uploadPostImage(String email, MultipartFile file) {
