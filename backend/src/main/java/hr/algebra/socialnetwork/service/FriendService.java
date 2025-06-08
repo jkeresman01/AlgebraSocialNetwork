@@ -23,75 +23,44 @@ public class FriendService {
     private final FriendRequestDTOMapper friendRequestDTOMapper;
 
     public void sendFriendRequest(String senderEmail, Long receiverId) {
-        User sender = userRepository.findByEmail(senderEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
+        User sender = getUserByEmail(senderEmail, "Sender with email [%s] not found.".formatted(senderEmail));
+        User receiver = getUserById(receiverId, "Receiver with ID [%d] not found.".formatted(receiverId));
 
-        if (sender.getId().equals(receiverId)) {
-            throw new IllegalArgumentException("Cannot send friend request to yourself");
-        }
+        validateNotSelfRequest(sender.getId(), receiverId);
+        validateNotAlreadyFriends(sender, receiver);
+        validateNotAlreadyRequested(sender, receiver);
 
-        User receiver = userRepository.findById(receiverId)
-                .orElseThrow(() -> new ResourceNotFoundException("Receiver not found"));
-
-        if (sender.getFriends().contains(receiver)) {
-            throw new IllegalStateException("Already friends");
-        }
-
-        boolean alreadyRequested = friendRequestRepository.existsBySenderAndReceiverAndStatus(
-                sender, receiver, RequestStatus.PENDING);
-
-        if (alreadyRequested) {
-            throw new IllegalStateException("Friend request already sent");
-        }
-
-        FriendRequest request = new FriendRequest();
-        request.setSender(sender);
-        request.setReceiver(receiver);
-        request.setStatus(RequestStatus.PENDING);
-        request.setCreatedAt(LocalDateTime.now());
-        request.setUpdatedAt(LocalDateTime.now());
-
+        FriendRequest request = createFriendRequest(sender, receiver);
         friendRequestRepository.save(request);
     }
 
     public void approveRequest(String receiverEmail, Long requestId) {
-        User receiver = userRepository.findByEmail(receiverEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Receiver not found"));
+        User receiver = getUserByEmail(receiverEmail,
+                "Receiver with email [%s] not found.".formatted(receiverEmail));
 
-        FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
+        FriendRequest request = getFriendRequestById(requestId);
 
-        if (!request.getReceiver().getId().equals(receiver.getId())) {
-            throw new IllegalStateException("You are not authorized to approve this request");
-        }
+        validateReceiverAuthorization(receiver, request);
 
-        request.setStatus(RequestStatus.ACCEPTED);
+        updateRequestStatus(request, RequestStatus.ACCEPTED);
 
-        User sender = request.getSender();
-        sender.getFriends().add(receiver);
-
-        userRepository.save(sender);
-        friendRequestRepository.save(request);
+        addAsFriends(request.getSender(), receiver);
     }
 
     public void declineRequest(String receiverEmail, Long requestId) {
-        if(!userRepository.existsByEmail(receiverEmail)) {
-                throw new ResourceNotFoundException("Receiver not found");
-        }
+        User receiver = getUserByEmail(receiverEmail,
+                "Receiver with email [%s] not found.".formatted(receiverEmail));
 
-        FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Request with id [%d] not found!"));
+        FriendRequest request = getFriendRequestById(requestId);
 
-        request.setStatus(RequestStatus.REJECTED);
-        friendRequestRepository.save(request);
+        validateReceiverAuthorization(receiver, request);
+
+        updateRequestStatus(request, RequestStatus.REJECTED);
     }
 
     public void removeFriend(String requesterEmail, Long otherUserId) {
-        User requester = userRepository.findByEmail(requesterEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Requester not found"));
-
-        User other = userRepository.findById(otherUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Other user not found"));
+        User requester = getUserByEmail(requesterEmail, "User (requester) with email [%s] not found.".formatted(requesterEmail));
+        User other = getUserById(otherUserId, "User (to remove) with ID [%d] not found.".formatted(otherUserId));
 
         requester.getFriends().remove(other);
         other.getFriends().remove(requester);
@@ -101,8 +70,7 @@ public class FriendService {
     }
 
     public List<FriendRequestDTO> getPendingRequests(String receiverEmail) {
-        User receiver = userRepository.findByEmail(receiverEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User receiver = getUserByEmail(receiverEmail, "User with email [%s] not found.".formatted(receiverEmail));
 
         return friendRequestRepository
                 .findByReceiverAndStatus(receiver, RequestStatus.PENDING)
@@ -111,4 +79,68 @@ public class FriendService {
                 .toList();
     }
 
+    private void validateReceiverAuthorization(User receiver, FriendRequest request) {
+        if (!request.getReceiver().getId().equals(receiver.getId())) {
+            throw new IllegalStateException("You are not authorized to manage this request.");
+        }
+    }
+
+    private void updateRequestStatus(FriendRequest request, RequestStatus status) {
+        request.setStatus(status);
+        request.setUpdatedAt(LocalDateTime.now());
+        friendRequestRepository.save(request);
+    }
+
+    private void addAsFriends(User sender, User receiver) {
+        sender.getFriends().add(receiver);
+        userRepository.save(sender);
+    }
+
+    private User getUserByEmail(String email, String errorMessage) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(errorMessage));
+    }
+
+    private User getUserById(Long id, String errorMessage) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(errorMessage));
+    }
+
+    private FriendRequest getFriendRequestById(Long requestId) {
+        return friendRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Friend request with ID [%d] not found.".formatted(requestId)));
+    }
+
+    private void validateNotSelfRequest(Long senderId, Long receiverId) {
+        if (senderId.equals(receiverId)) {
+            throw new IllegalArgumentException("Cannot send a friend request to yourself.");
+        }
+    }
+
+    private void validateNotAlreadyFriends(User sender, User receiver) {
+        if (sender.getFriends().contains(receiver)) {
+            throw new IllegalStateException("You are already friends with this user.");
+        }
+    }
+
+    private void validateNotAlreadyRequested(User sender, User receiver) {
+        boolean isAlreadyRequested = friendRequestRepository.existsBySenderAndReceiverAndStatus(
+                sender, receiver, RequestStatus.PENDING);
+
+        if (isAlreadyRequested) {
+            throw new IllegalStateException("A friend request has already been sent.");
+        }
+    }
+
+    private FriendRequest createFriendRequest(User sender, User receiver) {
+        LocalDateTime now = LocalDateTime.now();
+
+        return FriendRequest.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .status(RequestStatus.PENDING)
+                .createdAt(now)
+                .updatedAt(now)
+                .build();
+    }
 }

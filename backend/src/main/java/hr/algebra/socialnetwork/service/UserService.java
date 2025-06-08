@@ -6,6 +6,7 @@ import hr.algebra.socialnetwork.exception.RequestValidationException;
 import hr.algebra.socialnetwork.exception.ResourceNotFoundException;
 import hr.algebra.socialnetwork.mapper.UserDTOMapper;
 import hr.algebra.socialnetwork.mapper.UserSummaryDTOMapper;
+import hr.algebra.socialnetwork.model.Gender;
 import hr.algebra.socialnetwork.model.User;
 import hr.algebra.socialnetwork.payload.UserUpdateRequest;
 import hr.algebra.socialnetwork.repository.UserRepository;
@@ -26,93 +27,91 @@ public class UserService {
 
     public Page<UserSummaryDTO> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(userSummaryDTOMapper);
-
     }
 
     public UserDTO getUserById(Long userId) {
-        return userRepository
-                .findById(userId)
+        return userRepository.findById(userId)
                 .map(userDTOMapper)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id [%s] not found".formatted(userId)));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User with id [%s] not found".formatted(userId)));
     }
 
     public UserDTO updateUserByEmail(String email, UserUpdateRequest request) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User with email [%s] not found".formatted(email)));
+        User user = findUserByEmail(email);
+        boolean hasChanges = applyUserUpdates(user, request);
 
-        boolean isUpdateValid = false;
-
-        if (request.firstName() != null && !request.firstName().isBlank()
-                && !request.firstName().equals(user.getFirstName())) {
-            user.setFirstName(request.firstName());
-            isUpdateValid = true;
-        }
-
-        if (request.lastName() != null && !request.lastName().isBlank()
-                && !request.lastName().equals(user.getLastName())) {
-            user.setLastName(request.lastName());
-            isUpdateValid = true;
-        }
-
-        if (request.email() != null && !request.email().isBlank()
-                && !request.email().equals(user.getEmail())) {
-            user.setEmail(request.email());
-            isUpdateValid = true;
-        }
-
-        if (request.gender() != null && !request.gender().equals(user.getGender())) {
-            user.setGender(request.gender());
-            isUpdateValid = true;
-        }
-
-        if (request.password() != null && !request.password().isBlank()) {
-            user.setPassword(passwordEncoder.encode(request.password()));
-            isUpdateValid = true;
-        }
-
-        if (!isUpdateValid) {
-            throw new RequestValidationException("No changes detected in the update request");
+        if (!hasChanges) {
+            throw new RequestValidationException("No changes detected in the update request.");
         }
 
         userRepository.save(user);
         return userDTOMapper.apply(user);
     }
 
-//    public void uploadProfileImage(Long userId, MultipartFile file) {
-//
-//        if (!userRepository.existsById(userId)) {
-//            throw new ResourceNotFoundException("customer with id [%s] not found".formatted(userId));
-//        }
-//
-//        String profileImageId = UUID.randomUUID().toString();
-//
-//        try {
-//            s3Service.putObject(
-//                    s3Buckets.getCustomer(),
-//                    "profile-images/%s/%s".formatted(userId, profileImageId),
-//                    file.getBytes()
-//            );
-//        } catch (IOException e) {
-//            throw new RuntimeException("failed to upload profile image", e);
-//        }
-//
-//        userRepository.updateProfileImageId(profileImageId, userId);
-//    }
-//
-//    public byte[] getCustomerProfileImage(Long userId) {
-//        UserDTO user = userRepository.findById(userId)
-//                .map(userDTOMapper)
-//                .orElseThrow(() -> new ResourceNotFoundException("customer with id [%s] not found".formatted(userId)));
-//
-//        if (StringUtils.isBlank(user.profileImageId())) {
-//            throw new ResourceNotFoundException(
-//                    "customer with id [%s] profile image not found".formatted(userId));
-//        }
-//
-//        byte[] profileImage = s3Service.getObject(
-//                s3Buckets.getUser(),
-//                "profile-images/%s/%s".formatted(userId, user.profileImageId())
-//        );
-//        return profileImage;
-//    }
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User with email [%s] not found".formatted(email)));
+    }
+
+    private boolean applyUserUpdates(User user, UserUpdateRequest request) {
+        boolean updated = false;
+
+        updated |= updateFirstName(user, request.firstName());
+        updated |= updateLastName(user, request.lastName());
+        updated |= updateEmail(user, request.email());
+        updated |= updateGender(user, request.gender());
+        updated |= updatePassword(user, request.password());
+
+        return updated;
+    }
+
+    private boolean updateFirstName(User user, String newFirstName) {
+        if (isValidUpdate(newFirstName, user.getFirstName())) {
+            user.setFirstName(newFirstName);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean updateLastName(User user, String newLastName) {
+        if (isValidUpdate(newLastName, user.getLastName())) {
+            user.setLastName(newLastName);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean updateEmail(User user, String newEmail) {
+        if (isValidUpdate(newEmail, user.getEmail())) {
+            user.setEmail(newEmail);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean updateGender(User user, Gender newGender) {
+        if (newGender != null && !newGender.equals(user.getGender())) {
+            user.setGender(newGender);
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean updatePassword(User user, String newPassword) {
+        if (newPassword != null && !newPassword.isBlank()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isValidUpdate(String newValue, String oldValue) {
+        return newValue != null && !newValue.isBlank() && !newValue.equals(oldValue);
+    }
 }

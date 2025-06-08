@@ -68,24 +68,4 @@ public class PostController {
     public ResponseEntity<List<CommentDTO>> getCommentsForPost(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.getCommentsFromPostWith(postId));
     }
-
-    /*
-    //TODO
-    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadPostImage(
-            @RequestParam("file") MultipartFile file,
-            Principal principal
-    ) {
-        String email = principal.getName();
-        String imageId = postService.uploadPostImage(email, file);
-        return ResponseEntity.ok(imageId);
-    }
-
-    @GetMapping("/{postId}/image")
-    public ResponseEntity<byte[]> downloadPostImage(@PathVariable Long postId) {
-        byte[] image = postService.downloadPostImage(postId);
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(image);
-    }*/
 }
