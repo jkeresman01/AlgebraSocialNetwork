@@ -12,6 +12,61 @@ function HomePage() {
 
             <Flex
                 justify="center"
+                align="center"
+                bg="url(./src/assets/alg_wd_blur.svg)"
+                bgRepeat="no-repeat"
+                bgSize="cover"
+                backgroundPosition="center"
+                minH="95vh"
+                px={4}
+            >
+                <Flex
+                    direction={{ base: 'column', md: 'row' }}
+                    width="100%"
+                    maxW="1600px"
+                    height="80vh"
+                    gap={6}
+                >
+                    <Box
+                        width={{ base: '100%', md: '22%' }}
+                        mb={{ base: 6, md: 0 }}
+                    >
+                        <Sidebar />
+                    </Box>
+
+                    <Box
+                        flex="1"
+                        p={6}
+                        bg="white" // whiteAlpha.100
+                        borderRadius="lg"
+                        boxShadow="lg"
+                        minH="80vh"
+                        overflowY="auto"
+                        className="feed-scroll"
+                    >
+                        
+                            <PostFeed />
+                            <PostItem />
+                            <PostItem />
+                            <PostItem />
+                            <PostItem />
+                            <PostItem />
+                            <PostItem />
+                    </Box>
+
+                </Flex>
+            </Flex>
+        </>
+    );
+}
+
+function HomePageX() {
+    return (
+        <>
+            <Navbar />
+
+            <Flex
+                justify="center"
                 align="start"
                 bg="url(./src/assets/alg_wd_blur.svg)"
                 bgRepeat="no-repeat"
@@ -36,7 +91,7 @@ function HomePage() {
 
                     <Box
                         flex="1"
-                        p={6}
+
                         bg="whiteAlpha.100"
                         borderRadius="lg"
                         boxShadow="lg"
@@ -51,7 +106,10 @@ function HomePage() {
                             maxH="calc(100vh - 200px)"
                             overflowY="auto"
                             pr={2}
+                            className="feed-scroll"
                         >
+                            <PostItem />
+                            <PostItem />
                             <PostItem />
                             <PostItem />
                         </Box>

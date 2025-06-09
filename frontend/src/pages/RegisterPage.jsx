@@ -45,6 +45,7 @@ function RegisterPage() {
   const validateForm = () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword || !gender) {
       alert("All fields are required.");
+      
       return false;
     }
     if (!email.match(/^[a-zA-Z0-9._%+-]+$/)) {
@@ -57,6 +58,11 @@ function RegisterPage() {
     }
     return true;
   };
+
+  const handleSubmit = (e) => {
+        e.preventDefault();
+        handleRegister();
+    };
 
   const handleRegister = async () => {
     if (!validateForm()) return;
@@ -75,7 +81,8 @@ function RegisterPage() {
         alert("Registration successful! You can now log in.");
         navigate('/');
       } else {
-        alert("Registration failed: " + (response?.data?.message || "Unknown error"));
+        
+        alert("Registration failed: " + (response?.response?.data?.message || "Unknown error"));
       }
     } catch (error) {
       alert("Server error: Could not connect to the server.");
@@ -85,6 +92,7 @@ function RegisterPage() {
   return (
       <Container>
         <Flex height="100vh" justifyContent="center" alignItems="center" direction="column" padding="50px">
+          <form onSubmit={handleSubmit}>
           <Card.Root lg={{ width: "420px" }}>
             <Card.Body gap="2">
               <Image style={{ margin: 'auto' }} src="https://student.algebra.hr/pretinac/img/main/logo-algebra-black.svg" />
@@ -103,18 +111,15 @@ function RegisterPage() {
 
               <Select.Root
                   collection={genderOptions}
-                  selectedKey={gender}
-                  onSelectionChange={(key) => {
-                    if (typeof key === 'string') {
-                      setGender(key);
-                    }
+                  onValueChange={(key) => {
+                    setGender(key.value[0]);
                   }}
               >
                 <Select.HiddenSelect />
                 <Select.Label>Gender</Select.Label>
                 <Select.Control>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select gender" />
+                    <Select.ValueText placeholder="Select gender"/>
                   </Select.Trigger>
                   <Select.IndicatorGroup>
                     <Select.Indicator />
@@ -160,7 +165,7 @@ function RegisterPage() {
               <NavLink to="/" end>
                 <Button variant="outline">Back</Button>
               </NavLink>
-              <Button onClick={handleRegister} variant="outline" style={{
+              <Button variant="outline" type="submit" style={{
                 background: 'linear-gradient(45deg, var(--alg-gradient-color-1), var(--alg-gradient-color-2))',
                 color: 'white'
               }}>
@@ -168,6 +173,7 @@ function RegisterPage() {
               </Button>
             </Card.Footer>
           </Card.Root>
+          </form>
         </Flex>
       </Container>
   );

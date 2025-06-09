@@ -20,6 +20,11 @@ function LoginPage() {
         return () => { document.body.style.background = ''; };
     }, []);
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        handleLogin();
+    };
+
     const handleLogin = async () => {
         try {
             const response = await loginRequest({
@@ -30,7 +35,7 @@ function LoginPage() {
             if (response?.status === 200) {
                 login(response.data.token);
             } else {
-                alert("Login failed: " + response?.data?.message || "Unknown error");
+                alert("Login failed: " + response?.response?.data?.message || "Unknown error");
             }
 
         } catch (err) {
@@ -42,6 +47,7 @@ function LoginPage() {
     return (
         <Container>
             <Flex height="100vh" justifyContent="center" alignItems="center" direction="column" padding="40px">
+                <form onSubmit={handleSubmit}>
                 <Card.Root lg={{ width: "420px" }}>
                     <Card.Body gap="2">
                         <Image src="https://student.algebra.hr/pretinac/img/main/logo-algebra-black.svg" />
@@ -72,12 +78,13 @@ function LoginPage() {
                                 background: 'linear-gradient(45deg, var(--alg-gradient-color-1), var(--alg-gradient-color-2))',
                                 color: 'white'
                             }}
-                            onClick={handleLogin}
+                            type="submit"
                         >
                             Login
                         </Button>
                     </Card.Footer>
                 </Card.Root>
+                </form>
             </Flex>
         </Container>
     );
