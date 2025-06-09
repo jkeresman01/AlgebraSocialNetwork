@@ -3,20 +3,16 @@ package hr.algebra.socialnetwork.controller;
 import hr.algebra.socialnetwork.dto.CommentDTO;
 import hr.algebra.socialnetwork.dto.PostDTO;
 import hr.algebra.socialnetwork.payload.CreatePostRequest;
+import hr.algebra.socialnetwork.payload.UpdatePostRequest;
 import hr.algebra.socialnetwork.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -41,6 +37,18 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostById(id));
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> deletePostById(@RequestParam Long id) {
+        postService.deletePostById(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<PostDTO> updatePostById(@RequestParam Long id,@Valid @RequestBody UpdatePostRequest updatePostRequest) {
+        PostDTO postDTO = postService.updatePostById(id, updatePostRequest);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping
     public ResponseEntity<PostDTO> createPost(Principal principal, @RequestBody CreatePostRequest request) {
         return ResponseEntity.ok(postService.createPost(principal.getName(), request));
@@ -53,8 +61,7 @@ public class PostController {
 
     @PostMapping("/{id}/rate")
     public ResponseEntity<Void> ratePost(@PathVariable Long id, Principal principal, @RequestParam int stars) {
-        String email = principal.getName();
-        postService.ratePost(id, email, stars);
+        postService.ratePost(id, principal.getName(), stars);
         return ResponseEntity.ok().build();
     }
 

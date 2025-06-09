@@ -2,14 +2,16 @@ package hr.algebra.socialnetwork.payload;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
-public record CreatePostRequest(
+@Data
+public class CreatePostRequest{
         @NotBlank(message = "Title is required")
         @Size(max = 100, message = "Title must not exceed 100 characters")
-        String title,
+        String title;
 
         @NotBlank(message = "Content is required")
-        String content,
+        String content;
 
-        String imageId) {
+        String imageId;
 }

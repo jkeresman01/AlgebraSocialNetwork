@@ -36,10 +36,9 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
-    @PutMapping("{userId}")
+    @PutMapping("/me")
     public ResponseEntity<UserDTO> updateUserById(@Valid @RequestBody UserUpdateRequest updateRequest, Principal principal) {
-        String email = principal.getName();
-        UserDTO updatedUser = userService.updateUserByEmail(email, updateRequest);
+        UserDTO updatedUser = userService.updateUserByEmail(principal.getName(), updateRequest);
         return ResponseEntity.ok(updatedUser);
     }
 

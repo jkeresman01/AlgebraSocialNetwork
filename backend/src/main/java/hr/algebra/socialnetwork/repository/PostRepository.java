@@ -29,6 +29,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByUserId(@Param("userId") Long userId);
 
     @Query("""
+        DELETE FROM Post p
+        WHERE p.id = :id
+    """)
+    void deleteById(@Param("id") Long id);
+
+    @Query("""
             SELECT p FROM Post p
             """)
     List<Post> findAll();

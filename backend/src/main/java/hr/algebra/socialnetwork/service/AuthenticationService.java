@@ -2,8 +2,8 @@ package hr.algebra.socialnetwork.service;
 
 import hr.algebra.socialnetwork.exception.DuplicatedResourceException;
 import hr.algebra.socialnetwork.exception.ResourceNotFoundException;
-import hr.algebra.socialnetwork.mapper.RegisterRequestToUserMapper;
 import hr.algebra.socialnetwork.mapper.UserDTOMapper;
+import hr.algebra.socialnetwork.model.Gender;
 import hr.algebra.socialnetwork.model.User;
 import hr.algebra.socialnetwork.payload.AuthenticationRequest;
 import hr.algebra.socialnetwork.payload.AuthenticationResponse;
@@ -29,34 +29,41 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
-    private final RegisterRequestToUserMapper registerMapper;
     private final UserDTOMapper userDTOMapper;
 
     public AuthenticationResponse login(AuthenticationRequest request) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
         User user = userRepository
                 .findByEmail(userDetails.getUsername())
                 .orElseThrow(
                         () -> new ResourceNotFoundException("User with email [%s] not found!".formatted(userDetails.getUsername())));
 
         String token = jwtUtil.generateToken(userDetails);
+
         return new AuthenticationResponse(token, userDTOMapper.apply(user));
     }
 
-    public ResponseEntity<?> register(RegistrationRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new DuplicatedResourceException("Email already taken");
+    public void register(RegistrationRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicatedResourceException("Email [%s] already taken".formatted(request.getEmail()));
         }
 
-        User user = registerMapper.apply(request);
-        user.setPassword(passwordEncoder.encode(request.password()));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(createUser(request));
+    }
 
-        userRepository.save(user);
+    private User createUser(RegistrationRequest request) {
+        return User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .gender(request.getGender())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
-        return ResponseEntity.ok("User registered successfully");
     }
 }
