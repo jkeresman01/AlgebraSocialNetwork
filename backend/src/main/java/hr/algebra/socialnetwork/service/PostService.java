@@ -10,10 +10,12 @@ import hr.algebra.socialnetwork.model.Post;
 import hr.algebra.socialnetwork.model.Rating;
 import hr.algebra.socialnetwork.model.User;
 import hr.algebra.socialnetwork.payload.CreatePostRequest;
+import hr.algebra.socialnetwork.payload.UpdatePostRequest;
 import hr.algebra.socialnetwork.repository.CommentRepository;
 import hr.algebra.socialnetwork.repository.PostRepository;
 import hr.algebra.socialnetwork.repository.RatingRepository;
 import hr.algebra.socialnetwork.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -128,9 +130,9 @@ public class PostService {
 
     private Post buildPost(CreatePostRequest request, User user) {
         return Post.builder()
-                .title(request.title())
-                .content(request.content())
-                .imageId(request.imageId())
+                .title(request.getTitle())
+                .content(request.getTitle())
+                .imageId(request.getImageId())
                 .user(user)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -157,32 +159,23 @@ public class PostService {
                 .build();
     }
 
-//    public String uploadPostImage(String email, MultipartFile file) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-//
-//        String imageId = UUID.randomUUID().toString();
-//        String path = "post-images/%s/%s".formatted(user.getId(), imageId);
-//
-//        try {
-//            s3Service.putObject(s3Buckets.getUser(), path, file.getBytes());
-//        } catch (IOException e) {
-//            throw new RuntimeException("Failed to upload post image", e);
-//        }
-//
-//        return imageId;
-//    }
-//
-//    public byte[] downloadPostImage(Long postId) {
-//        Post post = postRepository.findById(postId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Post with id [%d] not found".formatted(postId)));
-//
-//        if (post.getImageId() == null || post.getImageId().isBlank()) {
-//            throw new ResourceNotFoundException("Post does not have an image");
-//        }
-//
-//        String path = "post-images/%s/%s".formatted(post.getUser().getId(), post.getImageId());
-//
-//        return s3Service.getObject(s3Buckets.getUser(), path);
-//    }
+    public void deletePostById(Long id) {
+        if(!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Post with id [%d] not found.".formatted(id));
+        }
+
+        userRepository.deleteById(id);
+    }
+
+    public PostDTO updatePostById(Long id, UpdatePostRequest updatePostRequest) {
+        Post post = postRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Post with id [%d] not found.".formatted(id)));
+
+        post.setTitle(updatePostRequest.getTitle());
+        post.setContent(updatePostRequest.getContent());
+        post.setImageId(updatePostRequest.getImageId());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        return postDTOMapper.apply(postRepository.save(post));
+    }
 }
