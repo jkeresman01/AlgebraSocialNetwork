@@ -11,7 +11,7 @@ const getAuthConfig = () => ({
 export const getAllPosts = async (page = 0, size = 10) => {
     try {
         return await axios.get(
-            `${API_BASE}/posts?page=${page}&size=${size}`,
+            `${API_BASE}/api/v1/posts?page=${page}&size=${size}`,
             getAuthConfig()
         );
     } catch (e) {
@@ -21,7 +21,7 @@ export const getAllPosts = async (page = 0, size = 10) => {
 
 export const getPostById = async (id) => {
     try {
-        return await axios.get(`${API_BASE}/posts/${id}`, getAuthConfig());
+        return await axios.get(`${API_BASE}/api/v1/posts/${id}`, getAuthConfig());
     } catch (e) {
         console.error(`Error: ${e}`);
     }
@@ -29,7 +29,7 @@ export const getPostById = async (id) => {
 
 export const createPost = async (postData) => {
     try {
-        return await axios.post(`${API_BASE}/posts`, postData, getAuthConfig());
+        return await axios.post(`${API_BASE}/api/v1/posts`, postData, getAuthConfig());
     } catch (e) {
         console.error(`Error: ${e}`);
     }
@@ -37,7 +37,7 @@ export const createPost = async (postData) => {
 
 export const getPostsByUser = async (userId) => {
     try {
-        return await axios.get(`${API_BASE}/posts/user/${userId}`, getAuthConfig());
+        return await axios.get(`${API_BASE}/api/v1/posts/user/${userId}`, getAuthConfig());
     } catch (e) {
         console.error(`Error: ${e}`);
     }
@@ -46,7 +46,7 @@ export const getPostsByUser = async (userId) => {
 export const ratePost = async (id, stars) => {
     try {
         return await axios.post(
-            `${API_BASE}/posts/${id}/rate?stars=${stars}`,
+            `${API_BASE}/api/v1/posts/${id}/rate?stars=${stars}`,
             {}, // empty body, TODO check if recalculated average should be send
             getAuthConfig()
         );
@@ -58,7 +58,7 @@ export const ratePost = async (id, stars) => {
 export const commentOnPost = async (id, content) => {
     try {
         return await axios.post(
-            `${API_BASE}/posts/${id}/comments`,
+            `${API_BASE}/api/v1/posts/${id}/comments`,
             content,
             {
                 ...getAuthConfig(),
@@ -75,7 +75,7 @@ export const commentOnPost = async (id, content) => {
 
 export const getCommentsForPost = async (postId) => {
     try {
-        return await axios.get(`${API_BASE}/posts/${postId}/comments`, getAuthConfig());
+        return await axios.get(`${API_BASE}/api/v1/posts/${postId}/comments`, getAuthConfig());
     } catch (e) {
         console.error(`Error: ${e}`);
     }
