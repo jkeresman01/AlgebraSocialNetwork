@@ -1,7 +1,10 @@
 import React from 'react'
 import { Heading, Avatar, Box, Center, Text, Stack, Button, Badge } from '@chakra-ui/react'
+import { getFullName } from '../../utils/utils'
 
 function SideUser() {
+
+    const fullName = getFullName();
 
     return (
     <Center >
@@ -37,7 +40,7 @@ function SideUser() {
             fontSize={'xl'}
             fontFamily={'body'}
         >
-            Mato Jelen Kralj
+            {fullName}
         </Heading>
         <Text fontWeight={600} color={'gray.500'} mb={4}>
             Programsko inženjerstvo
