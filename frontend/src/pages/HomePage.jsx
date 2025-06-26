@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'
+import axios from 'axios';
 import { Flex, Box } from '@chakra-ui/react';
 import Navbar from '../components/layout/Navbar.jsx';
 import Sidebar from '../components/layout/Sidebar.jsx';
@@ -6,6 +7,24 @@ import PostFeed from '../components/posts/PostFeed.jsx';
 import PostItem from '../components/posts/PostItem.jsx';
 
 function HomePage() {
+
+    const API_BASE = import.meta.env.VITE_ALGEBRA_SOCIAL_NETWORK_BASE_URL;
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const response = await axios.get(`${API_BASE}/api/v1/posts`);
+                //console.log(response.data.content);
+                setPosts(response.data.content);
+            } catch (error) {
+                console.error('Greska pri dohvacanju postova:', error);
+            }
+        };
+
+        fetchPosts();
+    }, []);
+
     return (
         <>
             <Navbar />
@@ -45,13 +64,10 @@ function HomePage() {
                         className="feed-scroll"
                     >
                         
-                            <PostFeed />
-                            <PostItem />
-                            <PostItem />
-                            <PostItem />
-                            <PostItem />
-                            <PostItem />
-                            <PostItem />
+                        <PostFeed />
+                        {posts.map((post) => (
+                            <PostItem key={post.id} post={post} />
+                        ))}
                     </Box>
 
                 </Flex>

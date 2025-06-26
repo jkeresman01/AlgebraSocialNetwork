@@ -4,10 +4,11 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import FriendRequestsPage from './pages/FriendRequestsPage.jsx';
 import StudentsPage from './pages/StudentsPage.jsx';
-//import ProfilePage from './pages/ProfilePage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 import PrivateRoute from './routes/PrivateRoute.jsx';
 import { AuthProvider } from './context/AuthContext';
 import './styles/App.css';
+import Dummy from "./pages/Dummy.jsx";
 
 function App() {
     return (
@@ -40,14 +41,14 @@ function App() {
                             </PrivateRoute>
                         }
                     />
-                    {/*<Route
+                    <Route
                         path="/profile"
                         element={
                             <PrivateRoute>
                                 <ProfilePage />
                             </PrivateRoute>
                         }
-                    />*/}
+                    />
                 </Routes>
             </AuthProvider>
         </BrowserRouter>

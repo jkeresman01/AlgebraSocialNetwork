@@ -33,7 +33,7 @@ function LoginPage() {
             });
 
             if (response?.status === 200) {
-                login(response.data.token);
+                login(response.data); // response.data.token
             } else {
                 alert("Login failed: " + response?.response?.data?.message || "Unknown error");
             }

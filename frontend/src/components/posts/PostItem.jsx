@@ -9,6 +9,7 @@ import {
     Button,
 } from "@chakra-ui/react";
 import { FaStar, FaRegStar, FaRegCommentDots } from "react-icons/fa";
+import { formatDate } from "../../utils/utils";
 
 const PostItem = ({ post }) => {
     const [rating, setRating] = useState(0);
@@ -52,18 +53,16 @@ const PostItem = ({ post }) => {
                     <Avatar.Image src="https://avatars.githubusercontent.com/u/210037477?v=4" />
                 </Avatar.Root>
                 <VStack spacing={0} align="start" color="black">
-                    <Text fontWeight="bold">{post?.author || "John Doe"}</Text>
-                    <Text fontSize="sm" color="gray.500">
-                        Posted just now
-                    </Text>
+                    <Text fontWeight="bold">{post?.userFullName || "Greska u imenu"}</Text>
+                    <Text fontSize="sm" color="gray.500" style={{marginTop: -5}}>{formatDate(post?.createdAt) || "Posted just now"}</Text>
                 </VStack>
             </HStack>
 
             <Text fontSize="lg" fontWeight="semibold" mb={1} color="black">
-                {post?.title || "Java programming on sunday!!!"}
+                {post?.title || "Greska u post titleu"}
             </Text>
             <Text fontSize="md" color="gray.700" mb={4}>
-                {post?.content || "THis is some random post data that asjdashdljkashdkjashdkjas jasdhklashdjkashdjkas jkashdjklashdkaskhjdkl lhasdjklhasdjklhaskdjk jashdjklashd asjkdhasjkdhlasdjklashdkjlashjkldhasjkldhjklashdjklhasjkldhasjklhdljkashdlashdjkash  ahjasdklhlasjk h  as hd as  a hdjkashdjkashdjkashdjkhaskd k ajjkasdhjkasdhsakdj  h  jahsdjkashkdjashjkdhjkashdkas jkashdjkashd"}
+                {post?.content || "Greska u post contentu"}
             </Text>
 
             <Box mb={4}>

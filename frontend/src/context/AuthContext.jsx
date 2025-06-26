@@ -21,14 +21,18 @@ export const AuthProvider = ({ children }) => {
         }
     });
 
-    const login = (token) => {
+    const login = (inputData) => {
         try {
+            const token = inputData.token;
+            const user = inputData.user;
+            //console.log(inputData);
             const decoded = jwtDecode(token);
             const userPayload = decoded.user || decoded;
             setUser(userPayload);
             setIsAuthenticated(true);
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(userPayload));
+            localStorage.setItem("userData", JSON.stringify(user));
             navigate("/home");
         } catch (e) {
             console.error("Invalid token", e);
@@ -40,6 +44,7 @@ export const AuthProvider = ({ children }) => {
         setUser({});
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+        localStorage.removeItem("userData");
         navigate("/");
     };
 
