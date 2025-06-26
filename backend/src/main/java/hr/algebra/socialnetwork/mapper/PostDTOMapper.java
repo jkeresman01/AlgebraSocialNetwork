@@ -18,7 +18,8 @@ public class PostDTOMapper implements Function<Post, PostDTO> {
                 post.getImageId(),
                 post.getAverageRating(),
                 post.getUser().getId(),
-                post.getUser().getFirstName() + " " + post.getUser().getLastName()
+                post.getUser().getFirstName() + " " + post.getUser().getLastName(),
+                post.getCreatedAt()
         );
     }
 }
