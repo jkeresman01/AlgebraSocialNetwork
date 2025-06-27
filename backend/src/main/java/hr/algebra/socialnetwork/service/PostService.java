@@ -15,8 +15,11 @@ import hr.algebra.socialnetwork.repository.CommentRepository;
 import hr.algebra.socialnetwork.repository.PostRepository;
 import hr.algebra.socialnetwork.repository.RatingRepository;
 import hr.algebra.socialnetwork.repository.UserRepository;
+import hr.algebra.socialnetwork.s3.S3Service;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +36,7 @@ public class PostService {
   private final RatingRepository ratingRepository;
   private final PostDTOMapper postDTOMapper;
   private final CommentDTOMapper commentDTOMapper;
+  private final S3Service s3Service;
 
   public Page<PostDTO> getAllPosts(Pageable pageable) {
     return postRepository.findAll(pageable).map(postDTOMapper);
@@ -175,9 +179,36 @@ public class PostService {
     return postDTOMapper.apply(postRepository.save(post));
   }
 
-  public void uploadPostImage(Long postId, MultipartFile file, String name) {}
+  public void uploadPostImage(Long postId, MultipartFile file, String email) {
+    Post post = findPostById(postId);
+    User user = findUserByEmail(email);
+
+    if (!post.getUser().getId().equals(user.getId())) {
+      throw new IllegalArgumentException("User is not the owner of this post");
+    }
+
+    String imageId = UUID.randomUUID().toString();
+    String key = "post-images/%s/%s.jpg".formatted(postId, imageId);
+
+    try {
+      s3Service.putObject(key, file.getBytes());
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to upload post image", e);
+    }
+
+    post.setImageId(imageId);
+    post.setUpdatedAt(LocalDateTime.now());
+    postRepository.save(post);
+  }
 
   public byte[] getPostImage(Long postId) {
-    return null;
+    Post post = findPostById(postId);
+
+    if (post.getImageId() == null || post.getImageId().isBlank()) {
+      throw new ResourceNotFoundException("Image not set for post with id [%d]".formatted(postId));
+    }
+
+    String key = "post-images/%s/%s.jpg".formatted(postId, post.getImageId());
+    return s3Service.getObject(key);
   }
 }
