@@ -6,7 +6,7 @@ git config --global user.email "41898282+github-actions[bot]@users.noreply.githu
 
 git add .
 if ! git diff --cached --quiet; then
-  git commit -m "chore: auto-format backend via Spotless"
+  git commit -m "Fix formatting nonsense"
   git push
 fi
 
