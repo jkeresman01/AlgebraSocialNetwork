@@ -7,5 +7,5 @@ git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GI
 
 git add .
 git diff --cached --quiet || git commit -m "Fix formatting nonse"
-git push origin HEAD:${GITHUB_REF_NAME}
+git push origin HEAD:refs/heads/${GITHUB_REF_NAME}
 
