@@ -6,6 +6,6 @@ git config --global user.email "41898282+github-actions[bot]@users.noreply.githu
 git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
 
 git add .
-git diff --cached --quiet || git commit -m "chore: auto-format backend via Spotless"
+git diff --cached --quiet || git commit -m "Fix formatting nonse"
 git push
 
