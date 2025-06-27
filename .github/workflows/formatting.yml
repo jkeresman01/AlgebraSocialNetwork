@@ -1,12 +1,11 @@
-iname: Format Frontend
+name: Formatting
 
 on:
   push:
   pull_request:
 
 jobs:
-  format:
-    name: Format and Push Changes
+  format-frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,9 +25,35 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Prettier to format files
+      - name: Run Prettier to auto-fix
         run: npx prettier --write .
 
-      - name: Commit and push changes if any
-        run: ../scripts/commit-format-frontend.sh
+      - name: Commit frontend formatting
+        run: ../../scripts/commit-format-frontend.sh
+        working-directory: frontend
+
+  format-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Run Spotless to auto-fix
+        run: ./mvnw spotless:apply
+
+      - name: Commit backend formatting
+        run: ../../scripts/commit-format-backend.sh
+        working-directory: backend
 
