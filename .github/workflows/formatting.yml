@@ -1,15 +1,13 @@
-name: Code Formatter
+name: Code Formatting Check
 
 on:
   pull_request:
+  push:
 
 jobs:
-  format-frontend:
-    name: Format Frontend (Prettier)
+  check-frontend:
+    name: Check Frontend Formatting (Prettier)
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF_NAME: ${{ github.head_ref || github.ref_name }}
-
     defaults:
       run:
         working-directory: frontend
@@ -26,22 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Prettier
-        run: npx prettier --write .
+      - name: Check Prettier formatting
+        run: npx prettier --check .
 
-      - name: Make commit-format-frontend.sh executable
-        run: chmod +x ../scripts/commit-format-frontend.sh
-
-      - name: Commit changes if needed
-        run: ../scripts/commit-format-frontend.sh
-
-  format-backend:
-    needs: format-frontend
-    name: Format Backend (Spotless)
+  check-backend:
+    name: Check Backend Formatting (Spotless)
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF_NAME: ${{ github.head_ref || github.ref_name }}
-
     defaults:
       run:
         working-directory: backend
@@ -53,12 +41,6 @@ jobs:
       - name: Set executable permission on mvnw
         run: chmod +x mvnw
 
-      - name: Apply Spotless formatting
-        run: ./mvnw spotless:apply
-
-      - name: Make commit-format-backend.sh executable
-        run: chmod +x ../scripts/commit-format-backend.sh
-
-      - name: Commit changes if needed
-        run: ../scripts/commit-format-backend.sh
+      - name: Check Spotless formatting
+        run: ./mvnw spotless:check
 

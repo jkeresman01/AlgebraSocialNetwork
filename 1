@@ -1,30 +1,47 @@
 #!/bin/bash
+
 set -e
 
+cd frontend
+
 ##################################################
+#
 # Configure Git
+#
 ##################################################
 git config --global user.name "github-actions[bot]"
 git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
 ##################################################
-# Set remote URL to use GitHub token for authentication
+#
+# Set the remote URL to use the GitHub token for authentication
+#
 ##################################################
 git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
 
 ##################################################
+#
 # Stage and commit formatting changes if any
+#
 ##################################################
-git add -A
+git add .
 if ! git diff --cached --quiet; then
-  git commit -m "Fix some formatting nonsense"
+  git commit -m "chore: auto-format frontend via Prettier"
 fi
 
-git fetch origin "$GITHUB_REF_NAME"
-git merge --strategy-option=theirs origin/"$GITHUB_REF_NAME" || true
+##################################################
+#
+# Pull with rebase to avoid conflicts
+#
+##################################################
+git pull --rebase origin "$GITHUB_REF_NAME"
 
 ##################################################
-# Push if there are changes
+#
+# Push if commit exists
+#
 ##################################################
-git push origin HEAD:"$GITHUB_REF_NAME"
+if ! git diff --cached --quiet; then
+  git push origin HEAD:"$GITHUB_REF_NAME"
+fi
 
