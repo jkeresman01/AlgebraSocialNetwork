@@ -9,21 +9,23 @@ git config --global user.name "github-actions[bot]"
 git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
 ##################################################
-# Set the remote URL to use the GitHub token for authentication
+# Set remote to use GitHub token for authentication
 ##################################################
 git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
 
 ##################################################
-# Pull with rebase to avoid conflicts before committing
+# Ensure clean pull before making changes
 ##################################################
+git fetch origin "$GITHUB_REF_NAME"
+git checkout "$GITHUB_REF_NAME"
 git pull --rebase origin "$GITHUB_REF_NAME"
 
 ##################################################
-# Stage and commit formatting changes if any
+# Stage, commit, and push formatting changes
 ##################################################
-git add -A
-if ! git diff --cached --quiet; then
-  git commit -m "Fix some formatting nonsense"
+if ! git diff --quiet; then
+  git add -A
+  git commit -m "chore: auto-format frontend via Prettier"
   git push origin HEAD:"$GITHUB_REF_NAME"
-gi
+fi
 

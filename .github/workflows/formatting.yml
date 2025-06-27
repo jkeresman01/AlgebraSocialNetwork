@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_REF_NAME: ${{ github.head_ref || github.ref_name }}
-    
+
     defaults:
       run:
         working-directory: frontend
@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_REF_NAME: ${{ github.head_ref || github.ref_name }}
+
     defaults:
       run:
         working-directory: backend
