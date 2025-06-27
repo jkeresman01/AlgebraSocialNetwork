@@ -57,7 +57,7 @@ const PostItem = ({ post }) => {
         </Avatar.Root>
         <VStack spacing={0} align="start" color="black">
           <Text fontWeight="bold">
-            {post?.userFullName || "Greska u imenu"}
+            {post?.userFullName || "Full Name"}
           </Text>
           <Text fontSize="sm" color="gray.500" style={{ marginTop: -5 }}>
             {formatDate(post?.createdAt) || "Posted just now"}
@@ -66,10 +66,10 @@ const PostItem = ({ post }) => {
       </HStack>
 
       <Text fontSize="lg" fontWeight="semibold" mb={1} color="black">
-        {post?.title || "Greska u post titleu"}
+        {post?.title || "Post Title"}
       </Text>
       <Text fontSize="md" color="gray.700" mb={4}>
-        {post?.content || "Greska u post contentu"}
+        {post?.content || "Post content"}
       </Text>
 
       <Box mb={4}>
