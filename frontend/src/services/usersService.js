@@ -8,11 +8,14 @@ const getAuthConfig = () => ({
   },
 });
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (page = 0, size = 10, sort = "id,asc") => {
   try {
-    return await axios.get(`${API_BASE}/api/v1/users`, getAuthConfig());
-  } catch {
-    console.error(`Error getting all users from API: ${API_BASE}`);
+    return await axios.get(
+      `${API_BASE}/api/v1/users?page=${page}&size=${size}&sort=${sort}`,
+      getAuthConfig(),
+    );
+  } catch (err) {
+    console.error("Failed to fetch users:", err);
   }
 };
 

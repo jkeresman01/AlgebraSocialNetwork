@@ -8,7 +8,6 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
 import { AuthProvider } from "./context/AuthContext";
 import "./styles/App.css";
-import Dummy from "./pages/Dummy.jsx";
 
 function App() {
   return (

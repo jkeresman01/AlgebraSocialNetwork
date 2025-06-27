@@ -9,7 +9,6 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import Navbar from "../components/layout/Navbar";
-import PostFeed from "../components/posts/PostFeed";
 import PostItem from "../components/posts/PostItem";
 import { getFullName } from "../utils/utils";
 
@@ -27,7 +26,8 @@ function Profile() {
         bgRepeat="no-repeat"
         bgSize="cover"
         backgroundPosition="center"
-        h="95vh"
+        minH="95vh"
+        px={4}
       >
         <Flex
           direction={{ base: "column", md: "row" }}
@@ -35,30 +35,33 @@ function Profile() {
           maxW="1580px"
           height="80vh"
         >
-          {/* Profile user feed */}
+          {/* Profile content */}
           <Box
             flex="1"
             border="1px solid black"
             bg="white"
-            p={4}
+            p={6}
             className="feed-scroll"
+            borderRadius="lg"
+            boxShadow="lg"
+            overflowY="auto"
           >
-            <Grid templateColumns="auto 1fr" gap={4} padding={10}>
+            <Grid templateColumns="auto 1fr" gap={4} padding={4}>
               <GridItem>
                 <Image
                   rounded="md"
                   src="https://avatars.githubusercontent.com/u/210037477?v=4"
-                  alt="Dan Abramov"
+                  alt="User Avatar"
                 />
               </GridItem>
               <GridItem>
-                <Heading fontSize={"xl"} fontFamily={"body"}>
+                <Heading fontSize="xl" fontFamily="body">
                   {fullName}
                 </Heading>
-                <Text fontWeight={600} color={"gray.500"} mb={4}>
+                <Text fontWeight={600} color="gray.500" mb={4}>
                   Programsko inženjerstvo
                 </Text>
-                <Text fontWeight={"bold"}>Bruno Koren</Text>
+                <Text fontWeight="bold">Bruno Koren</Text>
                 <Text>
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   Mauris rutrum, erat in ultrices posuere, erat nulla volutpat
@@ -74,9 +77,7 @@ function Profile() {
             </Grid>
 
             <PostItem />
-
             <PostItem />
-
             <PostItem />
           </Box>
         </Flex>
