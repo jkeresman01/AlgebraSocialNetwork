@@ -19,6 +19,13 @@ git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GI
 
 ##################################################
 #
+# Pull with rebase to prevent push conflicts
+#
+##################################################
+git pull --rebase origin "$GITHUB_REF_NAME"
+
+##################################################
+#
 # Stage any formatting changes
 #
 ##################################################
@@ -26,13 +33,6 @@ git add .
 if ! git diff --cached --quiet; then
   git commit -m "chore: auto-format backend via Spotless"
 fi
-
-##################################################
-#
-# Pull with rebase to prevent push conflicts
-#
-##################################################
-git pull --rebase origin "$GITHUB_REF_NAME"
 
 ##################################################
 #
