@@ -36,6 +36,7 @@ jobs:
         run: ../scripts/commit-format-frontend.sh
 
   format-backend:
+    needs: format-frontend
     name: Format Backend (Spotless)
     runs-on: ubuntu-latest
     env:
