@@ -56,9 +56,7 @@ const PostItem = ({ post }) => {
           <Avatar.Image src="https://avatars.githubusercontent.com/u/210037477?v=4" />
         </Avatar.Root>
         <VStack spacing={0} align="start" color="black">
-          <Text fontWeight="bold">
-            {post?.userFullName || "Full Name"}
-          </Text>
+          <Text fontWeight="bold">{post?.userFullName || "Full Name"}</Text>
           <Text fontSize="sm" color="gray.500" style={{ marginTop: -5 }}>
             {formatDate(post?.createdAt) || "Posted just now"}
           </Text>
