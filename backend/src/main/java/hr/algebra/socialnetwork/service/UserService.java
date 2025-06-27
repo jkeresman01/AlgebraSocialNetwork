@@ -20,98 +20,100 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final UserDTOMapper userDTOMapper;
-    private final UserSummaryDTOMapper userSummaryDTOMapper;
-    private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final UserDTOMapper userDTOMapper;
+  private final UserSummaryDTOMapper userSummaryDTOMapper;
+  private final PasswordEncoder passwordEncoder;
 
-    public Page<UserSummaryDTO> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable).map(userSummaryDTOMapper);
+  public Page<UserSummaryDTO> getAllUsers(Pageable pageable) {
+    return userRepository.findAll(pageable).map(userSummaryDTOMapper);
+  }
+
+  public UserDTO getUserById(Long userId) {
+    return userRepository
+        .findById(userId)
+        .map(userDTOMapper)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("User with id [%s] not found".formatted(userId)));
+  }
+
+  public UserDTO updateUserByEmail(String email, UserUpdateRequest request) {
+    User user = findUserByEmail(email);
+    boolean hasChanges = applyUserUpdates(user, request);
+
+    if (!hasChanges) {
+      throw new RequestValidationException("No changes detected in the update request.");
     }
 
-    public UserDTO getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .map(userDTOMapper)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with id [%s] not found".formatted(userId)));
+    userRepository.save(user);
+    return userDTOMapper.apply(user);
+  }
+
+  private User findUserByEmail(String email) {
+    return userRepository
+        .findByEmail(email)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("User with email [%s] not found".formatted(email)));
+  }
+
+  private boolean applyUserUpdates(User user, UserUpdateRequest request) {
+    boolean updated = false;
+
+    updated |= updateFirstName(user, request.firstName());
+    updated |= updateLastName(user, request.lastName());
+    updated |= updateEmail(user, request.email());
+    updated |= updateGender(user, request.gender());
+    updated |= updatePassword(user, request.password());
+
+    return updated;
+  }
+
+  private boolean updateFirstName(User user, String newFirstName) {
+    if (isValidUpdate(newFirstName, user.getFirstName())) {
+      user.setFirstName(newFirstName);
+      return true;
     }
 
-    public UserDTO updateUserByEmail(String email, UserUpdateRequest request) {
-        User user = findUserByEmail(email);
-        boolean hasChanges = applyUserUpdates(user, request);
+    return false;
+  }
 
-        if (!hasChanges) {
-            throw new RequestValidationException("No changes detected in the update request.");
-        }
-
-        userRepository.save(user);
-        return userDTOMapper.apply(user);
+  private boolean updateLastName(User user, String newLastName) {
+    if (isValidUpdate(newLastName, user.getLastName())) {
+      user.setLastName(newLastName);
+      return true;
     }
 
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User with email [%s] not found".formatted(email)));
+    return false;
+  }
+
+  private boolean updateEmail(User user, String newEmail) {
+    if (isValidUpdate(newEmail, user.getEmail())) {
+      user.setEmail(newEmail);
+      return true;
     }
 
-    private boolean applyUserUpdates(User user, UserUpdateRequest request) {
-        boolean updated = false;
+    return false;
+  }
 
-        updated |= updateFirstName(user, request.firstName());
-        updated |= updateLastName(user, request.lastName());
-        updated |= updateEmail(user, request.email());
-        updated |= updateGender(user, request.gender());
-        updated |= updatePassword(user, request.password());
-
-        return updated;
+  private boolean updateGender(User user, Gender newGender) {
+    if (newGender != null && !newGender.equals(user.getGender())) {
+      user.setGender(newGender);
+      return true;
     }
 
-    private boolean updateFirstName(User user, String newFirstName) {
-        if (isValidUpdate(newFirstName, user.getFirstName())) {
-            user.setFirstName(newFirstName);
-            return true;
-        }
+    return false;
+  }
 
-        return false;
+  private boolean updatePassword(User user, String newPassword) {
+    if (newPassword != null && !newPassword.isBlank()) {
+      user.setPassword(passwordEncoder.encode(newPassword));
+      return true;
     }
 
-    private boolean updateLastName(User user, String newLastName) {
-        if (isValidUpdate(newLastName, user.getLastName())) {
-            user.setLastName(newLastName);
-            return true;
-        }
+    return false;
+  }
 
-        return false;
-    }
-
-    private boolean updateEmail(User user, String newEmail) {
-        if (isValidUpdate(newEmail, user.getEmail())) {
-            user.setEmail(newEmail);
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean updateGender(User user, Gender newGender) {
-        if (newGender != null && !newGender.equals(user.getGender())) {
-            user.setGender(newGender);
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean updatePassword(User user, String newPassword) {
-        if (newPassword != null && !newPassword.isBlank()) {
-            user.setPassword(passwordEncoder.encode(newPassword));
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isValidUpdate(String newValue, String oldValue) {
-        return newValue != null && !newValue.isBlank() && !newValue.equals(oldValue);
-    }
+  private boolean isValidUpdate(String newValue, String oldValue) {
+    return newValue != null && !newValue.isBlank() && !newValue.equals(oldValue);
+  }
 }

@@ -1,41 +1,41 @@
 package hr.algebra.socialnetwork.repository;
 
 import hr.algebra.socialnetwork.model.Post;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    @Query("""
+  @Query("""
             SELECT p FROM Post p
             WHERE p.id = :id
             """)
-    Optional<Post> findById(@Param("id") Long id);
+  Optional<Post> findById(@Param("id") Long id);
 
-    @Query("""
+  @Query(
+      """
             SELECT COUNT(p) > 0 FROM Post p
             WHERE p.id = :id
             """)
-    boolean existsById(@Param("id") Long id);
+  boolean existsById(@Param("id") Long id);
 
-    @Query("""
+  @Query("""
             SELECT p FROM Post p
             WHERE p.user.id = :userId
             """)
-    List<Post> findAllByUserId(@Param("userId") Long userId);
+  List<Post> findAllByUserId(@Param("userId") Long userId);
 
-    @Query("""
+  @Query("""
         DELETE FROM Post p
         WHERE p.id = :id
     """)
-    void deleteById(@Param("id") Long id);
+  void deleteById(@Param("id") Long id);
 
-    @Query("""
+  @Query("""
             SELECT p FROM Post p
             """)
-    List<Post> findAll();
+  List<Post> findAll();
 }

@@ -1,10 +1,8 @@
-import React from 'react'
-import SideUser from './SideUser.jsx'
+import React from "react";
+import SideUser from "./SideUser.jsx";
 
 function Sidebar() {
-  return (
-    <SideUser />
-  )
+  return <SideUser />;
 }
 
-export default Sidebar
+export default Sidebar;

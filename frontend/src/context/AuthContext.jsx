@@ -5,82 +5,82 @@ import { useNavigate } from "react-router-dom";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return localStorage.getItem("token") !== null;
-    });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem("token") !== null;
+  });
 
-    const [user, setUser] = useState(() => {
-        const stored = localStorage.getItem("user");
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    try {
+      return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+      console.warn("Invalid JSON in localStorage 'user':", stored);
+      return {};
+    }
+  });
+
+  const login = (inputData) => {
+    try {
+      const token = inputData.token;
+      const user = inputData.user;
+      //console.log(inputData);
+      const decoded = jwtDecode(token);
+      const userPayload = decoded.user || decoded;
+      setUser(userPayload);
+      setIsAuthenticated(true);
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userPayload));
+      localStorage.setItem("userData", JSON.stringify(user));
+      navigate("/home");
+    } catch (e) {
+      console.error("Invalid token", e);
+    }
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setUser({});
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userData");
+    navigate("/");
+  };
+
+  useEffect(() => {
+    const checkTokenExpired = () => {
+      const token = localStorage.getItem("token");
+      if (token) {
         try {
-            return stored ? JSON.parse(stored) : {};
-        } catch (e) {
-            console.warn("Invalid JSON in localStorage 'user':", stored);
-            return {};
+          const decoded = jwtDecode(token);
+          const now = Date.now() / 1000;
+          if (decoded.exp < now) {
+            console.log("Token expired");
+            logout();
+          }
+        } catch (err) {
+          console.error("Failed to decode token", err);
+          logout();
         }
-    });
-
-    const login = (inputData) => {
-        try {
-            const token = inputData.token;
-            const user = inputData.user;
-            //console.log(inputData);
-            const decoded = jwtDecode(token);
-            const userPayload = decoded.user || decoded;
-            setUser(userPayload);
-            setIsAuthenticated(true);
-            localStorage.setItem("token", token);
-            localStorage.setItem("user", JSON.stringify(userPayload));
-            localStorage.setItem("userData", JSON.stringify(user));
-            navigate("/home");
-        } catch (e) {
-            console.error("Invalid token", e);
-        }
+      }
     };
 
-    const logout = () => {
-        setIsAuthenticated(false);
-        setUser({});
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        localStorage.removeItem("userData");
-        navigate("/");
-    };
+    checkTokenExpired();
+    const interval = setInterval(checkTokenExpired, 60 * 1000);
 
-    useEffect(() => {
-        const checkTokenExpired = () => {
-            const token = localStorage.getItem("token");
-            if (token) {
-                try {
-                    const decoded = jwtDecode(token);
-                    const now = Date.now() / 1000;
-                    if (decoded.exp < now) {
-                        console.log("Token expired");
-                        logout();
-                    }
-                } catch (err) {
-                    console.error("Failed to decode token", err);
-                    logout();
-                }
-            }
-        };
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
-        checkTokenExpired();
-        const interval = setInterval(checkTokenExpired, 60 * 1000);
+  const value = {
+    isAuthenticated,
+    user,
+    login,
+    logout,
+    token: localStorage.getItem("token"),
+  };
 
-        return () => clearInterval(interval);
-    }, [isAuthenticated]);
-
-    const value = {
-        isAuthenticated,
-        user,
-        login,
-        logout,
-        token: localStorage.getItem("token")
-    };
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

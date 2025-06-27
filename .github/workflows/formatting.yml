@@ -1,0 +1,62 @@
+name: Code Formatter
+
+on:
+  pull_request:
+
+jobs:
+  format-frontend:
+    name: Format Frontend (Prettier)
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF_NAME: ${{ github.head_ref || github.ref_name }}
+    
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Prettier
+        run: npx prettier --write .
+
+      - name: Make commit-format-frontend.sh executable
+        run: chmod +x ../scripts/commit-format-frontend.sh
+
+      - name: Commit changes if needed
+        run: ../scripts/commit-format-frontend.sh
+
+  format-backend:
+    name: Format Backend (Spotless)
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF_NAME: ${{ github.head_ref || github.ref_name }}
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set executable permission on mvnw
+        run: chmod +x mvnw
+
+      - name: Apply Spotless formatting
+        run: ./mvnw spotless:apply
+
+      - name: Make commit-format-backend.sh executable
+        run: chmod +x ../scripts/commit-format-backend.sh
+
+      - name: Commit changes if needed
+        run: ../scripts/commit-format-backend.sh
+
