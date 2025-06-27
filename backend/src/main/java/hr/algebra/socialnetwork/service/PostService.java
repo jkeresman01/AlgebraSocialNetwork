@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -172,5 +173,11 @@ public class PostService {
     post.setUpdatedAt(LocalDateTime.now());
 
     return postDTOMapper.apply(postRepository.save(post));
+  }
+
+  public void uploadPostImage(Long postId, MultipartFile file, String name) {}
+
+  public byte[] getPostImage(Long postId) {
+    return null;
   }
 }

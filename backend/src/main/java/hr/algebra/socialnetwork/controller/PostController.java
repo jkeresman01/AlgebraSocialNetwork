@@ -13,8 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/posts")
@@ -76,5 +78,18 @@ public class PostController {
   @GetMapping("/{postId}/comments")
   public ResponseEntity<List<CommentDTO>> getCommentsForPost(@PathVariable Long postId) {
     return ResponseEntity.ok(postService.getCommentsFromPostWith(postId));
+  }
+
+  @PostMapping(value = "/{postId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Void> uploadPostImage(
+      @PathVariable Long postId, @RequestParam("file") MultipartFile file, Principal principal) {
+    postService.uploadPostImage(postId, file, principal.getName());
+    return ResponseEntity.ok().build();
+  }
+
+  @GetMapping(value = "/{postId}/image", produces = MediaType.IMAGE_JPEG_VALUE)
+  public ResponseEntity<byte[]> getPostImage(@PathVariable Long postId) {
+    byte[] image = postService.getPostImage(postId);
+    return ResponseEntity.ok(image);
   }
 }
