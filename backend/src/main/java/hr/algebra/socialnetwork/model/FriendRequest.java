@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,50 +20,35 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 @Data
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "friend_request", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"sender_id", "receiver_id"})
-})
+@Table(
+    name = "friend_request",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"sender_id", "receiver_id"})})
 public final class FriendRequest {
-    @Id
-    @GeneratedValue(
-            strategy = GenerationType.IDENTITY
-    )
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(
-            optional = false
-    )
-    private User sender;
+  @ManyToOne(optional = false)
+  private User sender;
 
-    @ManyToOne(
-            optional = false
-    )
-    private User receiver;
+  @ManyToOne(optional = false)
+  private User receiver;
 
-    @Enumerated(EnumType.STRING)
-    @Column(
-            nullable = false
-    )
-    private RequestStatus status = RequestStatus.PENDING;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private RequestStatus status = RequestStatus.PENDING;
 
-    @CreatedDate
-    @Column(
-            nullable = false,
-            updatable = false
-    )
-    private LocalDateTime createdAt;
+  @CreatedDate
+  @Column(nullable = false, updatable = false)
+  private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(
-            nullable = false
-    )
-    private LocalDateTime updatedAt;
+  @LastModifiedDate
+  @Column(nullable = false)
+  private LocalDateTime updatedAt;
 }

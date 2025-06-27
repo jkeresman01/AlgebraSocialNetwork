@@ -9,24 +9,24 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class RegistrationRequest{
-        @NotBlank(message = "Email is required")
-        @Email(message = "Invalid email format")
-        @AlgebraEmail
-        String email;
+public class RegistrationRequest {
+  @NotBlank(message = "Email is required")
+  @Email(message = "Invalid email format")
+  @AlgebraEmail
+  String email;
 
-        @NotBlank(message = "Password is required")
-        @Size(min = 6, message = "Password must be at least 6 characters")
-        String password;
+  @NotBlank(message = "Password is required")
+  @Size(min = 6, message = "Password must be at least 6 characters")
+  String password;
 
-        @NotBlank(message = "First name is required")
-        @NotNull(message = "First name is required")
-        String firstName;
+  @NotBlank(message = "First name is required")
+  @NotNull(message = "First name is required")
+  String firstName;
 
-        @NotBlank(message = "Last name is required")
-        @NotNull(message = "Last name is required")
-        String lastName;
+  @NotBlank(message = "Last name is required")
+  @NotNull(message = "Last name is required")
+  String lastName;
 
-        @NotNull(message = "Gender is required")
-        Gender gender;
+  @NotNull(message = "Gender is required")
+  Gender gender;
 }
