@@ -29,7 +29,7 @@ jobs:
         run: npx prettier --write .
 
       - name: Commit frontend formatting
-        run: ../../scripts/commit-format-frontend.sh
+        run: ../scripts/commit-format-frontend.sh
         working-directory: frontend
 
   format-backend:
@@ -54,6 +54,6 @@ jobs:
         run: ./mvnw spotless:apply
 
       - name: Commit backend formatting
-        run: ../../scripts/commit-format-backend.sh
+        run: ../scripts/commit-format-backend.sh
         working-directory: backend
 
