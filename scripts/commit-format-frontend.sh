@@ -2,8 +2,6 @@
 
 set -e
 
-cd frontend
-
 ##################################################
 # Configure Git
 ##################################################
@@ -27,5 +25,5 @@ git add -A
 if ! git diff --cached --quiet; then
   git commit -m "Fix some formatting nonsense"
   git push origin HEAD:"$GITHUB_REF_NAME"
-fi
+gi
 
