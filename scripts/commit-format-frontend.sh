@@ -20,10 +20,8 @@ if ! git diff --cached --quiet; then
   git commit -m "Fix some formatting nonsense"
 fi
 
-##################################################
-# Pull with rebase after committing
-##################################################
-git pull --rebase origin "$GITHUB_REF_NAME"
+git fetch origin "$GITHUB_REF_NAME"
+git merge --strategy-option=theirs origin/"$GITHUB_REF_NAME" || true
 
 ##################################################
 # Push if there are changes
