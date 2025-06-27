@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 ##################################################
@@ -9,23 +8,25 @@ git config --global user.name "github-actions[bot]"
 git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
 ##################################################
-# Set remote to use GitHub token for authentication
+# Set remote URL to use GitHub token for authentication
 ##################################################
 git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
 
 ##################################################
-# Ensure clean pull before making changes
+# Stage and commit formatting changes if any
 ##################################################
-git fetch origin "$GITHUB_REF_NAME"
-git checkout "$GITHUB_REF_NAME"
+git add -A
+if ! git diff --cached --quiet; then
+  git commit -m "Fix some formatting nonsense"
+fi
+
+##################################################
+# Pull with rebase after committing
+##################################################
 git pull --rebase origin "$GITHUB_REF_NAME"
 
 ##################################################
-# Stage, commit, and push formatting changes
+# Push if there are changes
 ##################################################
-if ! git diff --quiet; then
-  git add -A
-  git commit -m "chore: auto-format frontend via Prettier"
-  git push origin HEAD:"$GITHUB_REF_NAME"
-fi
+git push origin HEAD:"$GITHUB_REF_NAME"
 
