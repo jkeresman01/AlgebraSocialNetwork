@@ -9,16 +9,16 @@ import { getAllPosts } from "../services/postsService.js";
 function HomePage() {
   const [posts, setPosts] = useState([]);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await getAllPosts();
-        setPosts(response?.data?.content || []);
-      } catch (err) {
-        console.error("Failed to load posts:", err);
-      }
-    };
+  const fetchPosts = async () => {
+    try {
+      const response = await getAllPosts();
+      setPosts(response?.data?.content || []);
+    } catch (err) {
+      console.error("Failed to load posts:", err);
+    }
+  };
 
+  useEffect(() => {
     fetchPosts();
   }, []);
 
@@ -57,7 +57,7 @@ function HomePage() {
             className="feed-scroll"
             p={6}
           >
-            <PostFeed />
+            <PostFeed onPostCreated={fetchPosts} />
             <Box
               mt={6}
               maxH="calc(100vh - 200px)"

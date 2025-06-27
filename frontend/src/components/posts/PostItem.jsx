@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Text,
@@ -9,21 +9,79 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { FaStar, FaRegStar, FaRegCommentDots } from "react-icons/fa";
-import { formatDate } from "../../utils/utils";
+import { formatDate, getUID } from "../../utils/utils";
+import {
+  commentOnPost,
+  ratePost,
+  getCommentsForPost,
+  deletePostById,
+} from "../../services/postsService";
+import CommentItem from "./CommentItem";
 
 const PostItem = ({ post }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const UID = getUID();
 
-  const handleRating = (value) => setRating(value);
+  const handleRating = (value) => {
+    const response = ratePost(post.id, value);
+    //console.log("[PostRate]: " + response);
+    setRating(value);
+  };
 
-  const handleAddComment = () => {
-    if (comment.trim()) {
-      setComments([...comments, comment]);
+  const handleAddComment = async () => {
+    if (!comment.trim()) return;
+
+    try {
+      await commentOnPost(post.id, comment);
       setComment("");
+
+      const response = await getCommentsForPost(post.id);
+      const updatedComments = response.data;
+      if (Array.isArray(updatedComments)) {
+        setComments(updatedComments);
+      }
+    } catch (e) {
+      console.log("Comment error:", e);
     }
   };
+
+  const handleDeletePost = async () => {
+    console.log("Post: " + post.id);
+    try {
+      await deletePostById(post.id);
+    } catch (e) {
+      console.log("Failed to delete post. " + e);
+    }
+  };
+
+  useEffect(() => {
+    setRating(post.averageRating);
+
+    const fetchComments = async () => {
+      try {
+        const response = await getCommentsForPost(post.id);
+        const comments = response.data;
+
+        if (
+          Array.isArray(comments) &&
+          comments.length > 0 &&
+          comments.some((c) => Object.keys(c).length > 0)
+        ) {
+          setComments(comments);
+        } else {
+          //console.log("Nema komentara za ovaj post.");
+        }
+      } catch (e) {
+        console.error("Greška pri dohvaćanju komentara:", e);
+      }
+    };
+    fetchComments();
+  }, [post.id]);
+
+  //console.log(comments);
+  //console.count(`PostItem render - post ID: ${post.id}`);
 
   return (
     <Box
@@ -56,7 +114,9 @@ const PostItem = ({ post }) => {
           <Avatar.Image src="https://avatars.githubusercontent.com/u/210037477?v=4" />
         </Avatar.Root>
         <VStack spacing={0} align="start" color="black">
-          <Text fontWeight="bold">{post?.userFullName || "Full Name"}</Text>
+          <Text fontWeight="bold">
+            {post?.userFullName || "Greska u imenu"}
+          </Text>
           <Text fontSize="sm" color="gray.500" style={{ marginTop: -5 }}>
             {formatDate(post?.createdAt) || "Posted just now"}
           </Text>
@@ -64,10 +124,10 @@ const PostItem = ({ post }) => {
       </HStack>
 
       <Text fontSize="lg" fontWeight="semibold" mb={1} color="black">
-        {post?.title || "Post Title"}
+        {post?.title || "Greska u post titleu"}
       </Text>
       <Text fontSize="md" color="gray.700" mb={4}>
-        {post?.content || "Post content"}
+        {post?.content || "Greska u post contentu"}
       </Text>
 
       <Box mb={4}>
@@ -99,12 +159,9 @@ const PostItem = ({ post }) => {
         <Text fontWeight="medium" mb={2} color="black">
           Comments:
         </Text>
-        <VStack spacing={2} align="start" mb={2}>
-          {comments.map((cmt, i) => (
-            <Box key={i} px={3} py={2} bg="gray.100" borderRadius="md" w="100%">
-              <Text>{cmt}</Text>
-            </Box>
-          ))}
+        <VStack spacing={3} align="start" mb={2} w="100%">
+          {Array.isArray(comments) &&
+            comments.map((cmt, i) => <CommentItem key={i} comment={cmt} />)}
         </VStack>
         <Textarea
           value={comment}
@@ -114,6 +171,21 @@ const PostItem = ({ post }) => {
           mb={2}
         />
         <HStack justify="flex-end">
+          {UID === post.userId && (
+            <Button
+              size="sm"
+              onClick={handleDeletePost}
+              leftIcon={<FaRegCommentDots />}
+              bg="linear-gradient(90deg, #2f3144, #555879)"
+              color="white"
+              _hover={{
+                opacity: 0.9,
+              }}
+            >
+              Delete post
+            </Button>
+          )}
+
           <Button
             size="sm"
             onClick={handleAddComment}

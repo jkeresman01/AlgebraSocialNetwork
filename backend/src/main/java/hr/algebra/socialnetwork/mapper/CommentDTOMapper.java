@@ -13,6 +13,7 @@ public class CommentDTOMapper implements Function<Comment, CommentDTO> {
         comment.getId(),
         comment.getContent(),
         comment.getUser().getId(),
-        comment.getUser().getFirstName() + " " + comment.getUser().getLastName());
+        comment.getUser().getFirstName() + " " + comment.getUser().getLastName(),
+        comment.getCreatedAt());
   }
 }

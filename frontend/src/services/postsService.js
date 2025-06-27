@@ -39,6 +39,18 @@ export const createPost = async (postData) => {
   }
 };
 
+export const deletePostById = async (postId) => {
+  try {
+    return await axios.delete(
+      `${API_BASE}/api/v1/posts/${postId}`,
+      getAuthConfig(),
+    );
+  } catch (e) {
+    console.error(`Delete error: ${e}`);
+    throw e;
+  }
+};
+
 export const getPostsByUser = async (userId) => {
   try {
     return await axios.get(

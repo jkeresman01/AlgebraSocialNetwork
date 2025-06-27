@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Heading,
   Avatar,
@@ -12,7 +13,12 @@ import {
 import { getFullName } from "../../utils/utils";
 
 function SideUser() {
+  const navigate = useNavigate();
   const fullName = getFullName();
+
+  const handleGoToProfile = () => {
+    navigate("/profile");
+  };
 
   return (
     <Center>
@@ -41,7 +47,7 @@ function SideUser() {
             right: 0,
           }}
         >
-          <Avatar.Fallback name="Ime Prezime" />
+          <Avatar.Fallback name={fullName} />
           <Avatar.Image src="https://avatars.githubusercontent.com/u/210037477?v=4" />
         </Avatar.Root>
         <Heading
@@ -106,6 +112,7 @@ function SideUser() {
             _focus={{
               bg: "blue.500",
             }}
+            onClick={handleGoToProfile}
           >
             Profile
           </Button>

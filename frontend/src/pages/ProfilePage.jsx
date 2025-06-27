@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Flex,
   Box,
@@ -7,13 +8,48 @@ import {
   GridItem,
   Text,
   Heading,
+  Button,
+  Separator,
 } from "@chakra-ui/react";
 import Navbar from "../components/layout/Navbar";
+import PostFeed from "../components/posts/PostFeed";
 import PostItem from "../components/posts/PostItem";
-import { getFullName } from "../utils/utils";
+import { getFullName, getUID } from "../utils/utils";
+import { getPostsByUser } from "../services/postsService";
 
 function Profile() {
+  const navigate = useNavigate();
   const fullName = getFullName();
+  const UID = getUID();
+
+  const handleGoToEditProfile = () => {
+    navigate("/edit-profile");
+  };
+
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await getPostsByUser(UID);
+        const comments = response.data;
+
+        if (
+          Array.isArray(comments) &&
+          comments.length > 0 &&
+          comments.some((c) => Object.keys(c).length > 0)
+        ) {
+          setPosts(comments);
+        } else {
+          //console.log("Nema komentara za ovaj post.");
+        }
+      } catch (e) {
+        console.error("Greška pri dohvaćanju komentara:", e);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   return (
     <>
@@ -26,8 +62,7 @@ function Profile() {
         bgRepeat="no-repeat"
         bgSize="cover"
         backgroundPosition="center"
-        minH="95vh"
-        px={4}
+        h="95vh"
       >
         <Flex
           direction={{ base: "column", md: "row" }}
@@ -35,50 +70,49 @@ function Profile() {
           maxW="1580px"
           height="80vh"
         >
-          {/* Profile content */}
+          {/* Profile user feed */}
           <Box
             flex="1"
             border="1px solid black"
             bg="white"
-            p={6}
+            p={4}
             className="feed-scroll"
-            borderRadius="lg"
-            boxShadow="lg"
-            overflowY="auto"
           >
-            <Grid templateColumns="auto 1fr" gap={4} padding={4}>
+            <Grid templateColumns="auto 1fr" gap={4} padding={10}>
               <GridItem>
                 <Image
                   rounded="md"
+                  height={200}
                   src="https://avatars.githubusercontent.com/u/210037477?v=4"
-                  alt="User Avatar"
+                  alt={fullName}
+                  marginRight={5}
                 />
               </GridItem>
               <GridItem>
-                <Heading fontSize="xl" fontFamily="body">
+                <Heading fontSize={"xl"} fontFamily={"body"}>
                   {fullName}
                 </Heading>
-                <Text fontWeight={600} color="gray.500" mb={4}>
+                <Text fontWeight={600} color={"gray.500"} mb={4}>
                   Programsko inženjerstvo
                 </Text>
-                <Text fontWeight="bold">Bruno Koren</Text>
-                <Text>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Mauris rutrum, erat in ultrices posuere, erat nulla volutpat
-                  eros, sed sollicitudin velit quam id metus. Integer efficitur
-                  dui vitae ex cursus, nec pharetra ligula egestas. Etiam
-                  finibus massa libero, eu mollis diam hendrerit a. Ut ac odio
-                  quis nunc condimentum lacinia at ac lacus. Quisque id sem
-                  massa. Sed vulputate pharetra ligula, vitae porta lorem
-                  bibendum a. Ut mollis molestie libero, id vulputate felis
-                  condimentum in.
-                </Text>
+                <Separator padding={2} />
+                <Button
+                  tariant="outline"
+                  style={{
+                    background: "linear-gradient(45deg, #2563eb, #3b82f6)",
+                    color: "white",
+                  }}
+                  size="sm"
+                  onClick={handleGoToEditProfile}
+                >
+                  Edit profile
+                </Button>
               </GridItem>
             </Grid>
 
-            <PostItem />
-            <PostItem />
-            <PostItem />
+            {posts.map((post) => (
+              <PostItem key={post.id} post={post} />
+            ))}
           </Box>
         </Flex>
       </Flex>

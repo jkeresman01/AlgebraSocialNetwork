@@ -157,11 +157,11 @@ public class PostService {
   }
 
   public void deletePostById(Long id) {
-    if (!userRepository.existsById(id)) {
+    if (!postRepository.existsById(id)) {
       throw new ResourceNotFoundException("Post with id [%d] not found.".formatted(id));
     }
 
-    userRepository.deleteById(id);
+    postRepository.deleteById(id);
   }
 
   public PostDTO updatePostById(Long id, UpdatePostRequest updatePostRequest) {

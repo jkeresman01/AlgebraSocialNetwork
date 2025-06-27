@@ -8,6 +8,7 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
 import { AuthProvider } from "./context/AuthContext";
 import "./styles/App.css";
+import EditProfile from "./pages/EditProfilePage.jsx";
 
 function App() {
   return (
@@ -45,6 +46,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/edit-profile"
+            element={
+              <PrivateRoute>
+                <EditProfile />
               </PrivateRoute>
             }
           />

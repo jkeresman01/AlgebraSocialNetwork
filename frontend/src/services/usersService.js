@@ -22,7 +22,7 @@ export const getAllUsers = async (page = 0, size = 10, sort = "id,asc") => {
 export const updateUser = async (userId, userData) => {
   try {
     return await axios.put(
-      `${API_BASE}/api/v1/users/${userId}`,
+      `${API_BASE}/api/v1/users/me`,
       userData,
       getAuthConfig(),
     );
