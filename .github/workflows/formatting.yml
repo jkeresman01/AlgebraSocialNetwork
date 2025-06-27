@@ -8,6 +8,9 @@ jobs:
   format-frontend:
     name: Format Frontend (Prettier)
     runs-on: ubuntu-latest
+    env:
+      GITHUB_REF_NAME: ${{ github.ref_name }}
+
     defaults:
       run:
         working-directory: frontend
@@ -36,6 +39,8 @@ jobs:
   format-backend:
     name: Format Backend (Spotless)
     runs-on: ubuntu-latest
+    env:
+      GITHUB_REF_NAME: ${{ github.ref_name }}
     defaults:
       run:
         working-directory: backend
