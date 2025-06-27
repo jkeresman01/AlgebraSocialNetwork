@@ -1,8 +1,11 @@
-name: Code Formatter
+name: Formatting
 
 on:
   push:
   pull_request:
+
+permissions:
+  contents: write
 
 jobs:
   format-frontend:
@@ -11,26 +14,28 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install frontend dependencies
-        run: npm install
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Run Prettier (fix)
+      - name: Run Prettier and auto-fix
         run: npx prettier --write .
 
-      - name: Make commit script executable
-        run: chmod +x ../scripts/commit-format-frontend.sh
-
-      - name: Commit and push frontend changes
+      - name: Commit and push formatted frontend
         run: ../scripts/commit-format-frontend.sh
 
   format-backend:
@@ -39,26 +44,22 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: 21
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Make mvnw executable
-        run: chmod +x mvnw
+      - name: Make Maven wrapper executable
+        run: chmod +x ./mvnw
 
-      - name: Run Spotless Apply
+      - name: Apply Spotless formatting
         run: ./mvnw spotless:apply
 
-      - name: Make commit script executable
-        run: chmod +x ../scripts/commit-format-backend.sh
-
-      - name: Commit and push backend changes
+      - name: Commit and push formatted backend
         run: ../scripts/commit-format-backend.sh
 
