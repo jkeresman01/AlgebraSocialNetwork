@@ -77,7 +77,7 @@ export const ratePost = async (id, stars) => {
   try {
     return await axios.post(
       `${API_BASE}/api/v1/posts/${id}/rate?stars=${stars}`,
-      {}, // empty body, TODO check if recalculated average should be send
+      {},
       getAuthConfig(),
     );
   } catch (e) {

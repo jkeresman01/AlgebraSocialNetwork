@@ -19,19 +19,24 @@ import {
 import CommentItem from "./CommentItem";
 
 const PostItem = ({ post }) => {
-  const [rating, setRating] = useState(0);
+  const [averageRating, setAverageRating] = useState(post.averageRating || 0);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const UID = getUID();
 
-  const handleRating = (value) => {
-    ratePost(post.id, value);
-    setRating(value);
+  const handleRating = async (value) => {
+    try {
+      const response = await ratePost(post.id, value);
+      if (typeof response.data === "number") {
+        setAverageRating(response.data);
+      }
+    } catch (e) {
+      console.error("Rating error:", e);
+    }
   };
 
   const handleAddComment = async () => {
     if (!comment.trim()) return;
-
     try {
       await commentOnPost(post.id, comment);
       setComment("");
@@ -42,33 +47,29 @@ const PostItem = ({ post }) => {
         setComments(updatedComments);
       }
     } catch (e) {
-      console.log("Comment error:", e);
+      console.error("Comment error:", e);
     }
   };
 
   const handleDeletePost = async () => {
-    console.log("Post: " + post.id);
     try {
       await deletePostById(post.id);
     } catch (e) {
-      console.log("Failed to delete post. " + e);
+      console.error("Failed to delete post:", e);
     }
   };
 
   useEffect(() => {
-    setRating(post.averageRating);
-
     const fetchComments = async () => {
       try {
         const response = await getCommentsForPost(post.id);
-        const comments = response.data;
+        const fetchedComments = response.data;
 
         if (
-          Array.isArray(comments) &&
-          comments.length > 0 &&
-          comments.some((c) => Object.keys(c).length > 0)
+          Array.isArray(fetchedComments) &&
+          fetchedComments.some((c) => Object.keys(c).length > 0)
         ) {
-          setComments(comments);
+          setComments(fetchedComments);
         }
       } catch (e) {
         console.error("Error fetching comments:", e);
@@ -92,7 +93,7 @@ const PostItem = ({ post }) => {
         <Avatar.Root
           size={"lg"}
           mb={4}
-          pos={"relative"}
+          pos="relative"
           _after={{
             content: '""',
             w: 5,
@@ -122,6 +123,11 @@ const PostItem = ({ post }) => {
       <Text fontSize="lg" fontWeight="semibold" mb={1} color="black">
         {post?.title || "Greska u post titleu"}
       </Text>
+
+      <Text fontSize="sm" color="gray.600" mb={2}>
+        Average Rating: {averageRating?.toFixed(1)} / 5
+      </Text>
+
       <Text fontSize="md" color="gray.700" mb={4}>
         {post?.content || "Greska u post contentu"}
       </Text>
@@ -149,7 +155,7 @@ const PostItem = ({ post }) => {
         </Text>
         <HStack spacing={1}>
           {[1, 2, 3, 4, 5].map((val) =>
-            val <= rating ? (
+            val <= Math.round(averageRating) ? (
               <FaStar
                 key={val}
                 color="gold"

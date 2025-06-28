@@ -71,10 +71,9 @@ public class PostController {
   }
 
   @PostMapping("/{id}/rate")
-  public ResponseEntity<Void> ratePost(
+  public ResponseEntity<Double> ratePost(
       @PathVariable Long id, Principal principal, @RequestParam int stars) {
-    postService.ratePost(id, principal.getName(), stars);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.ok(postService.ratePost(id, principal.getName(), stars));
   }
 
   @PostMapping("/{id}/comments")
