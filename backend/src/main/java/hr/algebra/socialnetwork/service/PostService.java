@@ -128,7 +128,7 @@ public class PostService {
   private Post buildPost(CreatePostRequest request, User user) {
     return Post.builder()
         .title(request.getTitle())
-        .content(request.getTitle())
+        .content(request.getContent())
         .imageId(request.getImageId())
         .user(user)
         .createdAt(LocalDateTime.now())
