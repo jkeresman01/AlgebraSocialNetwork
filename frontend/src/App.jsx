@@ -42,6 +42,14 @@ function App() {
             }
           />
           <Route
+            path="/friends"
+            element={
+              <PrivateRoute>
+                <StudentsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/profile"
             element={
               <PrivateRoute>

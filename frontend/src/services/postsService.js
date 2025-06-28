@@ -19,6 +19,17 @@ export const getAllPosts = async (page = 0, size = 10) => {
   }
 };
 
+export const getFriendsPosts = async (page = 0, size = 10) => {
+  try {
+    return await axios.get(
+      `${API_BASE}/api/v1/posts/friends?page=${page}&size=${size}`,
+      getAuthConfig(),
+    );
+  } catch (e) {
+    console.error(`Error: ${e}`);
+  }
+};
+
 export const getPostById = async (id) => {
   try {
     return await axios.get(`${API_BASE}/api/v1/posts/${id}`, getAuthConfig());
