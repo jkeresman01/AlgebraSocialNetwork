@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Flex,
   Box,
@@ -11,78 +11,56 @@ import {
   Heading,
   Card,
   Input,
-  Select,
-  Portal,
   InputGroup,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
-import { PasswordInput } from "../components/common/PasswordInput";
 import {
   getEmailPrefix,
   getFirstName,
   getFullName,
-  getGender,
   getLastName,
   getUID,
 } from "../utils/utils";
 import { updateUser, uploadProfileImage } from "../services/usersService";
-import { createListCollection } from "@chakra-ui/react";
 
 function EditProfile() {
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState(getFirstName());
   const [lastName, setLastName] = useState(getLastName());
-  const [gender, setGender] = useState("");
   const [email, setEmail] = useState(getEmailPrefix());
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [selectedProfileImage, setSelectedProfileImage] = useState(null);
 
   const fullName = getFullName();
   const UID = getUID();
 
-  const genderOptions = createListCollection({
-    items: [
-      { label: "FEMALE", value: "FEMALE" },
-      { label: "MALE", value: "MALE" },
-      { label: "OTHER", value: "OTHER" },
-    ],
-  });
-
-  useEffect(() => {
-    const tempGenderFetch = getGender();
-    setGender(tempGenderFetch);
-  }, []);
-
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
+    if (selectedProfileImage) {
+      const formData = new FormData();
+      formData.append("file", selectedProfileImage);
+
+      try {
+        await uploadProfileImage(UID, formData);
+      } catch (err) {
+        console.error("Image upload failed", err);
+        alert("Failed to upload profile image");
+        return;
+      }
     }
 
     const userData = {
-      email,
-      password,
+      userId: UID,
+      email: email + "@algebra.hr",
       firstName,
       lastName,
-      gender,
     };
 
     try {
       const response = await updateUser(UID, userData);
-
       if (response?.status === 200) {
-        if (selectedProfileImage) {
-          const formData = new FormData();
-          formData.append("file", selectedProfileImage);
-          await uploadProfileImage(UID, formData);
-          console.log("Profile image uploaded");
-        }
-
         alert("Profile updated successfully!");
       } else {
         alert("Failed to update profile.");
@@ -90,10 +68,6 @@ function EditProfile() {
     } catch (error) {
       console.error("Update failed:", error);
     }
-
-    console.log(
-      `${firstName} | ${lastName} | ${gender} | ${email} | ${password} | ${confirmPassword}`,
-    );
   }
 
   return (
@@ -164,36 +138,6 @@ function EditProfile() {
                     />
                   </Field.Root>
 
-                  <Select.Root
-                    collection={genderOptions}
-                    onValueChange={(key) => {
-                      setGender(key.value[0]);
-                    }}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Label>Gender</Select.Label>
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Select gender" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {genderOptions.items.map((item) => (
-                            <Select.Item item={item} key={item.value}>
-                              {item.label}
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-
                   <Field.Root>
                     <Field.Label>Email</Field.Label>
                     <InputGroup endAddon="@algebra.hr">
@@ -203,22 +147,6 @@ function EditProfile() {
                         onChange={(e) => setEmail(e.target.value)}
                       />
                     </InputGroup>
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Password</Field.Label>
-                    <PasswordInput
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </Field.Root>
-
-                  <Field.Root>
-                    <Field.Label>Confirm password</Field.Label>
-                    <PasswordInput
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
                   </Field.Root>
 
                   <Field.Root>
