@@ -65,3 +65,22 @@ export const getPendingFriendRequests = async () => {
     console.error(`Error: ${e}`);
   }
 };
+
+export const getFriends = async () => {
+  try {
+    return await axios.get(`${API_BASE}/api/v1/friends/all`, getAuthConfig());
+  } catch (e) {
+    console.error(`Error fetching friends: ${e}`);
+  }
+};
+
+export const getNonFriends = async () => {
+  try {
+    return await axios.get(
+      `${API_BASE}/api/v1/friends/non-friends`,
+      getAuthConfig(),
+    );
+  } catch (e) {
+    console.error(`Error fetching non-friends: ${e}`);
+  }
+};

@@ -1,17 +1,13 @@
 package hr.algebra.socialnetwork.controller;
 
 import hr.algebra.socialnetwork.dto.FriendRequestDTO;
+import hr.algebra.socialnetwork.dto.UserSummaryDTO;
 import hr.algebra.socialnetwork.service.FriendService;
 import java.security.Principal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/friends")
@@ -47,5 +43,15 @@ public class FriendsController {
   @GetMapping("/requests")
   public ResponseEntity<List<FriendRequestDTO>> getPendingRequests(Principal principal) {
     return ResponseEntity.ok(friendService.getPendingRequests(principal.getName()));
+  }
+
+  @GetMapping("/all")
+  public ResponseEntity<List<UserSummaryDTO>> getFriends(Principal principal) {
+    return ResponseEntity.ok(friendService.getFriends(principal.getName()));
+  }
+
+  @GetMapping("/non-friends")
+  public ResponseEntity<List<UserSummaryDTO>> getNonFriends(Principal principal) {
+    return ResponseEntity.ok(friendService.getNonFriends(principal.getName()));
   }
 }

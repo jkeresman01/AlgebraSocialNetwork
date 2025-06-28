@@ -1,8 +1,10 @@
 package hr.algebra.socialnetwork.service;
 
 import hr.algebra.socialnetwork.dto.FriendRequestDTO;
+import hr.algebra.socialnetwork.dto.UserSummaryDTO;
 import hr.algebra.socialnetwork.exception.ResourceNotFoundException;
 import hr.algebra.socialnetwork.mapper.FriendRequestDTOMapper;
+import hr.algebra.socialnetwork.mapper.UserSummaryDTOMapper;
 import hr.algebra.socialnetwork.model.FriendRequest;
 import hr.algebra.socialnetwork.model.RequestStatus;
 import hr.algebra.socialnetwork.model.User;
@@ -10,6 +12,8 @@ import hr.algebra.socialnetwork.repository.FriendRequestRepository;
 import hr.algebra.socialnetwork.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +24,7 @@ public class FriendService {
   private final UserRepository userRepository;
   private final FriendRequestRepository friendRequestRepository;
   private final FriendRequestDTOMapper friendRequestDTOMapper;
+  private final UserSummaryDTOMapper userSummaryDTOMapper;
 
   public void sendFriendRequest(String senderEmail, Long receiverId) {
     User sender =
@@ -121,6 +126,47 @@ public class FriendService {
             () ->
                 new ResourceNotFoundException(
                     "Friend request with ID [%d] not found.".formatted(requestId)));
+  }
+
+  public List<UserSummaryDTO> getFriends(String email) {
+    User user = getUserByEmail(email, "User with email [%s] not found.".formatted(email));
+    return user.getFriends().stream().map(userSummaryDTOMapper).toList();
+  }
+
+  public List<UserSummaryDTO> getNonFriends(String requesterEmail) {
+    User requester =
+        getUserByEmail(
+            requesterEmail,
+            "User (requester) with email [%s] not found.".formatted(requesterEmail));
+
+    Set<User> friends = requester.getFriends();
+
+    List<User> allUsers = userRepository.findAll();
+    List<User> potentialFriends =
+        allUsers.stream()
+            .filter(user -> !user.getId().equals(requester.getId()))
+            .filter(user -> !friends.contains(user))
+            .collect(Collectors.toList());
+
+    List<FriendRequest> sentOrReceivedRequests =
+        friendRequestRepository.findBySenderOrReceiverAndStatus(
+            requester, requester, RequestStatus.PENDING);
+
+    Set<Long> requestedUserIds =
+        sentOrReceivedRequests.stream()
+            .map(
+                req -> {
+                  if (req.getSender().equals(requester)) {
+                    return req.getReceiver().getId();
+                  } else {
+                    return req.getSender().getId();
+                  }
+                })
+            .collect(Collectors.toSet());
+
+    potentialFriends.removeIf(user -> requestedUserIds.contains(user.getId()));
+
+    return potentialFriends.stream().map(userSummaryDTOMapper).toList();
   }
 
   private void validateNotSelfRequest(Long senderId, Long receiverId) {
