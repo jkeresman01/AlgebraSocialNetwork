@@ -62,14 +62,26 @@ public class PostService {
     return postRepository.findAllByUserId(userId).stream().map(postDTOMapper).toList();
   }
 
-  public void ratePost(Long postId, String email, int stars) {
+  public double ratePost(Long postId, String email, int stars) {
     validateStars(stars);
 
     Post post = findPostById(postId);
     User user = findUserByEmail(email);
-    Rating rating = buildRating(post, user, stars);
+
+    Rating rating =
+        ratingRepository
+            .findByPostAndUser(post, user)
+            .map(
+                existing -> {
+                  existing.setStars(stars);
+                  existing.setUpdatedAt(LocalDateTime.now());
+                  return existing;
+                })
+            .orElseGet(() -> buildRating(post, user, stars));
 
     ratingRepository.save(rating);
+
+    return post.getAverageRating();
   }
 
   public void commentOnPost(Long postId, String email, String content) {
