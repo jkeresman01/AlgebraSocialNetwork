@@ -9,6 +9,7 @@ import PrivateRoute from "./routes/PrivateRoute.jsx";
 import { AuthProvider } from "./context/AuthContext";
 import "./styles/App.css";
 import EditProfile from "./pages/EditProfilePage.jsx";
+import FriendsPage from "./pages/FriendsPage.jsx";
 
 function App() {
   return (
@@ -45,7 +46,7 @@ function App() {
             path="/friends"
             element={
               <PrivateRoute>
-                <StudentsPage />
+                <FriendsPage />
               </PrivateRoute>
             }
           />

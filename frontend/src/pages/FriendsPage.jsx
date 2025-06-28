@@ -1,68 +1,58 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Heading,
-  VStack,
-  Text,
-  Button,
-  HStack,
-  Spinner,
-  Flex,
-} from "@chakra-ui/react";
-import {
-  getPendingFriendRequests,
-  approveFriendRequest,
-  declineFriendRequest,
-} from "../services/friendsService.js";
-
+import { Box, Button, Flex, Spinner, Text, VStack } from "@chakra-ui/react";
 import Navbar from "../components/layout/Navbar.jsx";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import AlgBG from "../assets/alg_wd_blur.svg";
+import { getFriends, removeFriend } from "../services/friendsService.js";
 
-const RequestsPage = () => {
-  const [requests, setRequests] = useState([]);
+const FriendsPage = () => {
+  const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [removing, setRemoving] = useState({});
 
-  const fetchRequests = async () => {
+  useEffect(() => {
+    document.body.style.background = `url(${AlgBG})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    return () => {
+      document.body.style.background = "";
+    };
+  }, []);
+
+  const fetchFriends = async () => {
+    setLoading(true);
     try {
-      const res = await getPendingFriendRequests();
-      setRequests(res.data || []);
-    } catch (err) {
-      alert("Error fetching requests.");
+      const res = await getFriends();
+      setFriends(res?.data || []);
+    } catch (e) {
+      console.error("Failed to fetch friends", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (id) => {
-    try {
-      await approveFriendRequest(id);
-      alert("Friend request approved.");
-      fetchRequests();
-    } catch (err) {
-      alert("Error approving request.");
-    }
-  };
-
-  const handleDecline = async (id) => {
-    try {
-      await declineFriendRequest(id);
-      alert("Friend request declined.");
-      fetchRequests();
-    } catch (err) {
-      alert("Error declining request.");
-    }
-  };
-
   useEffect(() => {
-    fetchRequests();
+    fetchFriends();
   }, []);
 
-  if (loading) return <Spinner size="xl" mt={10} />;
+  const handleRemoveFriend = async (id) => {
+    setRemoving((prev) => ({ ...prev, [id]: true }));
+    try {
+      await removeFriend(id);
+      setFriends((prev) => prev.filter((f) => f.id !== id));
+      alert("Friend removed.");
+    } catch (e) {
+      console.error("Failed to remove friend", e);
+      alert("Failed to remove friend.");
+    } finally {
+      setRemoving((prev) => ({ ...prev, [id]: false }));
+    }
+  };
 
   return (
     <>
       <Navbar />
+
       <Flex
         justify="center"
         align="center"
@@ -78,57 +68,61 @@ const RequestsPage = () => {
           maxW="1580px"
           height="80vh"
         >
-          <Box width={{ base: "100%", md: "20%" }} marginRight={5}>
+          <Box width={{ base: "100%", md: "20%" }} mr={5}>
             <Sidebar />
           </Box>
 
-          <Box flex="1" p={6} overflowY="auto">
-            <Heading size="lg" mb={4} color="white">
-              Pending Friend Requests
-            </Heading>
-            <VStack spacing={4} align="stretch">
-              {requests.length === 0 ? (
-                <Text color="white">No pending friend requests</Text>
-              ) : (
-                requests.map((req) => (
-                  <Box
-                    key={req.id}
-                    p={4}
-                    shadow="md"
-                    borderWidth="1px"
-                    rounded="md"
-                    bg="whiteAlpha.800"
-                  >
-                    <HStack justifyContent="space-between">
-                      <Text
-                        fontWeight="bold"
-                        bg="linear-gradient(45deg, var(--alg-gradient-color-1), var(--alg-gradient-color-2))"
-                        bgClip="text"
-                        color="transparent"
-                      >
-                        {req.senderFullName || "Unknown User"}
-                      </Text>
-                      <HStack>
+          <Box flex="1" overflowY="auto">
+            {loading ? (
+              <Spinner size="xl" mt={10} />
+            ) : (
+              <VStack spacing={4}>
+                {friends.length === 0 ? (
+                  <Text>No friends found.</Text>
+                ) : (
+                  friends.map((friend) => (
+                    <Box
+                      key={friend.id}
+                      p={4}
+                      width="100%"
+                      shadow="md"
+                      borderWidth="1px"
+                      bg="whiteAlpha.800"
+                      rounded="lg"
+                    >
+                      <Flex justifyContent="space-between" alignItems="center">
+                        <Box>
+                          <Text
+                            fontWeight="bold"
+                            bg="linear-gradient(45deg, var(--alg-gradient-color-1), var(--alg-gradient-color-2))"
+                            bgClip="text"
+                            color="transparent"
+                          >
+                            {friend.firstName} {friend.lastName}
+                          </Text>
+                          <Text fontSize="sm" color="gray.600">
+                            {friend.email}
+                          </Text>
+                        </Box>
+
                         <Button
-                          colorScheme="green"
+                          style={{
+                            background:
+                              "linear-gradient(45deg, #f56565, #e53e3e)",
+                            color: "white",
+                          }}
                           size="sm"
-                          onClick={() => handleApprove(req.id)}
+                          isLoading={removing[friend.id]}
+                          onClick={() => handleRemoveFriend(friend.id)}
                         >
-                          Approve
+                          Unfriend
                         </Button>
-                        <Button
-                          colorScheme="red"
-                          size="sm"
-                          onClick={() => handleDecline(req.id)}
-                        >
-                          Decline
-                        </Button>
-                      </HStack>
-                    </HStack>
-                  </Box>
-                ))
-              )}
-            </VStack>
+                      </Flex>
+                    </Box>
+                  ))
+                )}
+              </VStack>
+            )}
           </Box>
         </Flex>
       </Flex>
@@ -136,4 +130,4 @@ const RequestsPage = () => {
   );
 };
 
-export default RequestsPage;
+export default FriendsPage;

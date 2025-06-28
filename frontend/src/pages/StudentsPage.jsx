@@ -1,18 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Spinner,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Spinner, Text, VStack } from "@chakra-ui/react";
 import Navbar from "../components/layout/Navbar.jsx";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import AlgBG from "../assets/alg_wd_blur.svg";
-import { sendFriendRequest } from "../services/friendsService";
-import { getAllUsers } from "../services/usersService";
+import { sendFriendRequest, getNonFriends } from "../services/friendsService";
 
 const StudentsPage = () => {
   const [students, setStudents] = useState([]);
@@ -28,17 +19,18 @@ const StudentsPage = () => {
     };
   }, []);
 
+  const fetchStudents = async () => {
+    try {
+      const res = await getNonFriends();
+      setStudents(res?.data || []);
+    } catch (e) {
+      console.error("Failed to fetch non-friends", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const res = await getAllUsers();
-        setStudents(res.data.content || []);
-      } catch (e) {
-        console.error("Failed to fetch students", e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStudents();
   }, []);
 
@@ -47,6 +39,7 @@ const StudentsPage = () => {
     try {
       await sendFriendRequest(id);
       alert("Friend request sent.");
+      fetchStudents(); // Refresh list
     } catch (e) {
       console.error("Error sending friend request", e);
       alert("Failed to send request.");
@@ -84,7 +77,7 @@ const StudentsPage = () => {
             ) : (
               <VStack spacing={4}>
                 {students.length === 0 ? (
-                  <Text>No students found.</Text>
+                  <Text>No users to add.</Text>
                 ) : (
                   students.map((student) => (
                     <Box
@@ -112,7 +105,6 @@ const StudentsPage = () => {
                         </Box>
 
                         <Button
-                          tariant="outline"
                           style={{
                             background:
                               "linear-gradient(45deg, var(--alg-gradient-color-1), var(--alg-gradient-color-2))",
