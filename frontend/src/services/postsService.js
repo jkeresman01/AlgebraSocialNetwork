@@ -102,3 +102,14 @@ export const getCommentsForPost = async (postId) => {
     console.error(`Error: ${e}`);
   }
 };
+
+export const uploadPostImage = (postId, formData) => {
+  console.log(postId);
+  console.log(formData);
+  return axios.post(`${API_BASE}/api/v1/posts/${postId}/image`, formData, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};

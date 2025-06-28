@@ -9,12 +9,9 @@ import {
   Field,
   Button,
   Heading,
-  Separator,
   Card,
-  Container,
   Input,
   Select,
-  createListCollection,
   Portal,
   InputGroup,
 } from "@chakra-ui/react";
@@ -29,7 +26,8 @@ import {
   getLastName,
   getUID,
 } from "../utils/utils";
-import { updateUser } from "../services/usersService";
+import { updateUser, uploadProfileImage } from "../services/usersService";
+import { createListCollection } from "@chakra-ui/react";
 
 function EditProfile() {
   const navigate = useNavigate();
@@ -40,6 +38,7 @@ function EditProfile() {
   const [email, setEmail] = useState(getEmailPrefix());
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [selectedProfileImage, setSelectedProfileImage] = useState(null);
 
   const fullName = getFullName();
   const UID = getUID();
@@ -53,7 +52,7 @@ function EditProfile() {
   });
 
   useEffect(() => {
-    let tempGenderFetch = getGender();
+    const tempGenderFetch = getGender();
     setGender(tempGenderFetch);
   }, []);
 
@@ -77,8 +76,14 @@ function EditProfile() {
       const response = await updateUser(UID, userData);
 
       if (response?.status === 200) {
+        if (selectedProfileImage) {
+          const formData = new FormData();
+          formData.append("file", selectedProfileImage);
+          await uploadProfileImage(UID, formData);
+          console.log("Profile image uploaded");
+        }
+
         alert("Profile updated successfully!");
-        //navigate('/');
       } else {
         alert("Failed to update profile.");
       }
@@ -87,17 +92,7 @@ function EditProfile() {
     }
 
     console.log(
-      firstName +
-        " | " +
-        lastName +
-        " | " +
-        gender +
-        " | " +
-        email +
-        " | " +
-        password +
-        " | " +
-        confirmPassword,
+      `${firstName} | ${lastName} | ${gender} | ${email} | ${password} | ${confirmPassword}`,
     );
   }
 
@@ -120,7 +115,6 @@ function EditProfile() {
           maxW="1580px"
           height="80vh"
         >
-          {/* Profile user feed */}
           <Box
             flex="1"
             border="1px solid black"
@@ -139,16 +133,15 @@ function EditProfile() {
                 />
               </GridItem>
               <GridItem>
-                <Heading fontSize={"xl"} fontFamily={"body"}>
+                <Heading fontSize="xl" fontFamily="body">
                   {fullName}
                 </Heading>
-                <Text fontWeight={600} color={"gray.500"} mb={4}>
+                <Text fontWeight={600} color="gray.500" mb={4}>
                   Programsko inženjerstvo
                 </Text>
               </GridItem>
             </Grid>
 
-            {/* TU DODAJEM EDIT */}
             <form onSubmit={handleSubmit}>
               <Card.Root>
                 <Card.Body gap="2">
@@ -226,6 +219,31 @@ function EditProfile() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                     />
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label>Profile Image</Field.Label>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          setSelectedProfileImage(e.target.files[0]);
+                        }
+                      }}
+                    />
+                    {selectedProfileImage && (
+                      <Box mt={3}>
+                        <img
+                          src={URL.createObjectURL(selectedProfileImage)}
+                          alt="Preview"
+                          style={{
+                            maxHeight: "150px",
+                            borderRadius: "8px",
+                          }}
+                        />
+                      </Box>
+                    )}
                   </Field.Root>
                 </Card.Body>
 

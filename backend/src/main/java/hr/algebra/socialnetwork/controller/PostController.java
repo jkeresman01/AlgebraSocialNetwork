@@ -52,7 +52,7 @@ public class PostController {
 
   @PostMapping
   public ResponseEntity<PostDTO> createPost(
-      Principal principal, @RequestBody CreatePostRequest request) {
+      Principal principal, @Valid @RequestBody CreatePostRequest request) {
     return ResponseEntity.ok(postService.createPost(principal.getName(), request));
   }
 

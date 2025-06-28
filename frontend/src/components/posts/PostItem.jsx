@@ -25,8 +25,7 @@ const PostItem = ({ post }) => {
   const UID = getUID();
 
   const handleRating = (value) => {
-    const response = ratePost(post.id, value);
-    //console.log("[PostRate]: " + response);
+    ratePost(post.id, value);
     setRating(value);
   };
 
@@ -70,18 +69,14 @@ const PostItem = ({ post }) => {
           comments.some((c) => Object.keys(c).length > 0)
         ) {
           setComments(comments);
-        } else {
-          //console.log("Nema komentara za ovaj post.");
         }
       } catch (e) {
-        console.error("Greška pri dohvaćanju komentara:", e);
+        console.error("Error fetching comments:", e);
       }
     };
+
     fetchComments();
   }, [post.id]);
-
-  //console.log(comments);
-  //console.count(`PostItem render - post ID: ${post.id}`);
 
   return (
     <Box
@@ -113,6 +108,7 @@ const PostItem = ({ post }) => {
           <Avatar.Fallback name="Ime Prezime" />
           <Avatar.Image src="https://avatars.githubusercontent.com/u/210037477?v=4" />
         </Avatar.Root>
+
         <VStack spacing={0} align="start" color="black">
           <Text fontWeight="bold">
             {post?.userFullName || "Greska u imenu"}
@@ -129,6 +125,23 @@ const PostItem = ({ post }) => {
       <Text fontSize="md" color="gray.700" mb={4}>
         {post?.content || "Greska u post contentu"}
       </Text>
+
+      {typeof post.imageId === "string" && post.imageId.trim() !== "" && (
+        <Box mb={4}>
+          <img
+            src={`http://localhost:8080/api/v1/posts/${post.id}/image`}
+            alt="Post"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "400px",
+              width: "auto",
+              height: "auto",
+              borderRadius: "8px",
+              objectFit: "contain",
+            }}
+          />
+        </Box>
+      )}
 
       <Box mb={4}>
         <Text fontWeight="medium" mb={2} color="black">
@@ -178,23 +191,18 @@ const PostItem = ({ post }) => {
               leftIcon={<FaRegCommentDots />}
               bg="linear-gradient(90deg, #2f3144, #555879)"
               color="white"
-              _hover={{
-                opacity: 0.9,
-              }}
+              _hover={{ opacity: 0.9 }}
             >
               Delete post
             </Button>
           )}
-
           <Button
             size="sm"
             onClick={handleAddComment}
             leftIcon={<FaRegCommentDots />}
             bg="linear-gradient(90deg, var(--alg-gradient-color-1), var(--alg-gradient-color-2))"
             color="white"
-            _hover={{
-              opacity: 0.9,
-            }}
+            _hover={{ opacity: 0.9 }}
           >
             Add Comment
           </Button>

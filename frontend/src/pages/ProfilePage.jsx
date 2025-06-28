@@ -22,7 +22,7 @@ function Profile() {
   const fullName = getFullName();
   const UID = getUID();
 
-  const handleGoToEditProfile = () => {
+  const handleEditProfile = () => {
     navigate("/edit-profile");
   };
 
@@ -41,10 +41,9 @@ function Profile() {
         ) {
           setPosts(comments);
         } else {
-          //console.log("Nema komentara za ovaj post.");
         }
       } catch (e) {
-        console.error("Greška pri dohvaćanju komentara:", e);
+        console.error("", e);
       }
     };
 
@@ -70,7 +69,6 @@ function Profile() {
           maxW="1580px"
           height="80vh"
         >
-          {/* Profile user feed */}
           <Box
             flex="1"
             border="1px solid black"
@@ -103,7 +101,7 @@ function Profile() {
                     color: "white",
                   }}
                   size="sm"
-                  onClick={handleGoToEditProfile}
+                  onClick={handleEditProfile}
                 >
                   Edit profile
                 </Button>
