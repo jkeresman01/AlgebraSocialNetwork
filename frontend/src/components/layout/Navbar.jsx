@@ -23,6 +23,7 @@ function Navbar() {
     { label: "Profile", path: "/profile" },
     { label: "Students", path: "/students" },
     { label: "Requests", path: "/requests" },
+    { label: "Friends", path: "/friends" },
     { label: "Logout", action: "logout" },
   ];
 

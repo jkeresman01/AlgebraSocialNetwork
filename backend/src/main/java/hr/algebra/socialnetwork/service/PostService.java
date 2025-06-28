@@ -18,7 +18,9 @@ import hr.algebra.socialnetwork.repository.UserRepository;
 import hr.algebra.socialnetwork.s3.S3Service;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -210,5 +212,22 @@ public class PostService {
 
     String key = "post-images/%s/%s.jpg".formatted(postId, post.getImageId());
     return s3Service.getObject(key);
+  }
+
+  public Page<PostDTO> getFriendsPosts(String requesterEmail, Pageable pageable) {
+    User requester =
+        userRepository
+            .findByEmail(requesterEmail)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + requesterEmail));
+
+    Set<User> friendSet = requester.getFriends();
+    if (friendSet.isEmpty()) {
+      return Page.empty(pageable);
+    }
+
+    List<User> friends = new ArrayList<>(friendSet);
+
+    Page<Post> posts = postRepository.findAllByUserIn(friends, pageable);
+    return posts.map(postDTOMapper);
   }
 }
